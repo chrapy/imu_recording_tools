@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#008949</color> <!-- cielab: 50 -45 25 -->
+    <color name="colorPrimaryDark">#007436</color> <!-- cielab: 42 -45 25 -->
+    <color name="colorAccent">#00A1B6</color> <!-- cielab: 58 -45 -25 -->
+
+    <color name="ic_launcher_background">#FFFFFF</color>
+</resources>

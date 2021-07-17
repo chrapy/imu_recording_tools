@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GsdBle</string>
+
+    <string name="bt_not_available">Bluetooth Is Not Available On Your Device</string>
+    <string name="show_details">Show Details</string>
+    <string name="connect">connect</string>
+    <string name="apply">Apply</string>
+    <string name="disconnect">disconnect</string>
+    <string name="scanning">Scanning</string>
+    <string name="timeout">Timeout</string>
+    <string name="data_saved">Data Saved</string>
+    <string name="record">Record</string>
+    <string name="start">Start Recording</string>
+    <string name="stop">Stop Recording</string>
+    <string name="intervalTime">Sampling Rate:</string>
+    <string name="MTU">MTU:</string>
+    <string name="ODR">ODR:</string>
+    <string name="Pause">Pause:</string>
+    <string name="DeviceText">Sensor Location:</string>
+    <string name="sampleRateText">Received sample rate:</string>
+    <string name="addNoteTitle">Add note to recording</string>
+    <string name="ok">OK</string>
+    <string name="defaultLabel">default_label</string>
+
+
+    <string name="labelInputTitle">Enter Custom Label</string>
+    <string name="customLabel">custom label</string>
+    <string name="labelIndicator">Label:</string>
+    <string name="maxRecordingLengthText">Recording duration:</string>
+    <string name="startCountdownPrefix">Recording starts in\u0020</string>
+    <string name="secondPostfix">s</string>
+    <string name="stopCountdownPrefix">Recording stops in\u0020</string>
+    <string-array name="activities">
+        <item>running</item>
+        <item>sideskips_right</item>
+        <item>sideskips_left</item>
+        <item>carioca_right</item>
+        <item>carioca_left</item>
+        <item>high_knee_run</item>
+        <item>heel_to_butt</item>
+        <item>@string/customLabel</item>
+    </string-array>
+</resources>

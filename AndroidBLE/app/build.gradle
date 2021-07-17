@@ -1,0 +1,56 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "com.pascaldornfeld.gsdble"
+        minSdkVersion 26
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // gsdble fields
+        buildConfigField "String", "GSDBLE_DEVICE_NAME", "\"GSDBLE\""
+        buildConfigField "String", "GSDBLE_UUID_SERVICE", "\"b2154200-d1a3-e541-8bf7-8c8eb0519548\""
+        buildConfigField "String", "GSDBLE_UUID_CHARA_DATA", "\"b2154201-d1a3-e541-8bf7-8c8eb0519548\""
+        buildConfigField "String", "GSDBLE_UUID_CHARA_CONFIG", "\"b2154202-d1a3-e541-8bf7-8c8eb0519548\""
+
+        // thunderboard fields
+        buildConfigField "String", "THUBOA_UUID_SERVICE", "\"a4e649f4-4be5-11e5-885d-feff819cdc9f\""
+        buildConfigField "String", "THUBOA_UUID_CHARA_ACC", "\"c4c1f6e2-4be5-11e5-885d-feff819cdc9f\""
+        buildConfigField "String", "THUBOA_UUID_CHARA_GYRO", "\"b7c4b694-bee3-45dd-ba9f-f3b5e994f49a\""
+        buildConfigField "String", "THUBOA_UUID_CHARA_CONFIG", "\"71e30b8c-4131-4703-b0a0-b0bbba75856b\""
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.core:core-ktx:1.1.0'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation "com.androidplot:androidplot-core:1.5.6"
+    implementation 'no.nordicsemi.android:ble:2.1.1'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.1.0'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'com.google.code.gson:gson:2.8.6'
+}

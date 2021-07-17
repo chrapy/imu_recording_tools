@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:layout_marginHorizontal="4dp"
+    card_view:cardCornerRadius="8dp"
+    card_view:cardUseCompatPadding="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        tools:context=".connected.view.DeviceFragment">
+
+        <!-- col 1 -->
+
+        <TextView
+            android:id="@+id/deviceAdressLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/DeviceText"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/vDeviceAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textAlignment="center"
+            android:textColor="@color/ap_white"
+            app:layout_constraintEnd_toStartOf="@+id/vCheckEnable"
+            app:layout_constraintStart_toEndOf="@+id/deviceAdressLabel"
+            app:layout_constraintTop_toTopOf="@+id/deviceAdressLabel"
+            tools:text="ab:cd:ef:gh:ij:kl" />
+
+        <TextView
+            android:id="@+id/dataRateAverageLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sampleRateText"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/deviceAdressLabel" />
+
+        <TextView
+            android:id="@+id/vGraphDataRateAverage"
+            android:name="com.pascaldornfeld.gsdble.connected.view.subfragments.LongTimeGraphFragment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textColor="@color/ap_white"
+            app:layout_constraintEnd_toEndOf="@+id/vDeviceAddress"
+            app:layout_constraintStart_toStartOf="@+id/vDeviceAddress"
+            app:layout_constraintTop_toBottomOf="@+id/deviceAdressLabel"
+            tools:text="200" />
+
+        <!-- col 2 -->
+
+        <CheckBox
+            android:id="@+id/vCheckEnable"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:checked="false"
+            android:text="@string/show_details"
+            android:textColor="#ddd"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="vDeviceAddress,vGraphDataRateAverage,vCheckEnable" />
+
+        <View
+            android:id="@+id/visualDivider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="4dp"
+            app:layout_constraintTop_toBottomOf="@id/barrier1"
+            android:background="@android:color/darker_gray"/>
+
+        <fragment
+            android:id="@+id/vGraphAccel"
+            android:name="com.pascaldornfeld.gsdble.connected.view.subfragments.SensorGraphFragment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            app:layout_constraintEnd_toStartOf="@id/vGraphGyro"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/visualDivider" />
+
+
+        <fragment
+            android:id="@+id/vGraphGyro"
+            android:name="com.pascaldornfeld.gsdble.connected.view.subfragments.SensorGraphFragment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/vGraphAccel"
+            app:layout_constraintTop_toTopOf="@+id/vGraphAccel" />
+
+        <!-- col 3 -->
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="vGraphAccel,vGraphGyro" />
+
+        <fragment
+            android:id="@+id/vConfigOdr"
+            android:name="com.pascaldornfeld.gsdble.connected.view.subfragments.OdrFragment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toStartOf="@id/vConfigPause"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/barrier2" />
+
+        <fragment
+            android:id="@+id/vConfigPause"
+            android:name="com.pascaldornfeld.gsdble.connected.view.subfragments.PauseFragment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/vConfigOdr"
+            app:layout_constraintTop_toBottomOf="@id/barrier2" />
+
+        <!-- col 4 -->
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrier3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="vConfigOdr,vConfigPause" />
+
+        <fragment
+            android:id="@+id/vConfigIntv"
+            android:name="com.pascaldornfeld.gsdble.connected.view.subfragments.IntervalFragment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toStartOf="@id/vConfigMtu"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/barrier3" />
+
+        <fragment
+            android:id="@+id/vConfigMtu"
+            android:name="com.pascaldornfeld.gsdble.connected.view.subfragments.MtuFragment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/vConfigIntv"
+            app:layout_constraintTop_toBottomOf="@id/barrier3" />
+
+        <Button
+            android:id="@+id/vDisconnectButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:text="@string/disconnect"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/vConfigIntv" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
