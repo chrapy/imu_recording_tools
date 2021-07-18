@@ -185,8 +185,15 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         return if (item != null && item.itemId == R.id.search) {
             connectDialog.show(supportFragmentManager, null)
             true
+        } else return if (item != null && item.itemId == R.id.menu_settings) {
+            connectDialog.show(supportFragmentManager, null)
+            true
         } else super.onOptionsItemSelected(item)
     }
+
+
+    
+
 
     /**
      * remove the deviceFragment from the adapter-list

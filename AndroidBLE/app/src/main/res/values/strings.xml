@@ -31,6 +31,7 @@
     <string name="startCountdownPrefix">Recording starts in\u0020</string>
     <string name="secondPostfix">s</string>
     <string name="stopCountdownPrefix">Recording stops in\u0020</string>
+    <string name="settings">Settings</string>
     <string-array name="activities">
         <item>running</item>
         <item>sideskips_right</item>
