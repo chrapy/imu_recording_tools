@@ -175,7 +175,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     }
 
     /**
-     * add scan-button
+     * add scan- and settings-button
      */
     override fun onCreateOptionsMenu(menu: Menu?): Boolean =
         if (bleReady) {
@@ -184,14 +184,14 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         } else false
 
     /**
-     * handle click on the scan-button
+     * handle click on the scan- and settings-button
      */
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         return if (item != null && item.itemId == R.id.search) {
             connectDialog.show(supportFragmentManager, null)
             true
         } else return if (item != null && item.itemId == R.id.menu_settings) {
-            settingsDialog.show(supportFragmentManager, null)
+            connectDialog.show(supportFragmentManager, null)
             true
         } else super.onOptionsItemSelected(item)
     }
