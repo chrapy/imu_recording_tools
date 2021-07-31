@@ -18,7 +18,7 @@ class SettingsActivity : AppCompatActivity() {
                 .commit()
         }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setTitle("Settings")
+        supportActionBar?.title = "Settings"
     }
 
     class SettingsFragment : PreferenceFragmentCompat() {
@@ -29,12 +29,12 @@ class SettingsActivity : AppCompatActivity() {
 
     /**
     handle click on the back-button
-    */
+     */
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         return if (item != null) {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            onBackPressed()
             true
         } else super.onOptionsItemSelected(item)
     }
+
 }
