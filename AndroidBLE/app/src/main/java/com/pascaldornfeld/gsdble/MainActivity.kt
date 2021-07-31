@@ -33,7 +33,6 @@ import com.pascaldornfeld.gsdble.file_dumping.ExtremityData
 import com.pascaldornfeld.gsdble.file_dumping.FileOperations
 import com.pascaldornfeld.gsdble.file_dumping.GestureData
 import com.pascaldornfeld.gsdble.scan.ScanDialogFragment
-import com.pascaldornfeld.gsdble.settings.SettingsDialogFragment
 import kotlinx.android.synthetic.main.main_activity.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -45,7 +44,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private var bleReady = true
     private val bluetoothAdapter: BluetoothAdapter? by lazy { (getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager?)?.adapter }
     private lateinit var connectDialog: ScanDialogFragment
-    private lateinit var settingsDialog: SettingsDialogFragment
+    //private lateinit var settingsDialog: SettingsDialogFragment
     private var recorder: GestureData? = null
     private lateinit var activitySpinner: Spinner
     private var isRecording = false
@@ -84,8 +83,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 }
             )
         }
-
-        settingsDialog = SettingsDialogFragment().apply {  }
 
         // recording functionality
         vRecordButton.setOnClickListener {
@@ -191,7 +188,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             connectDialog.show(supportFragmentManager, null)
             true
         } else return if (item != null && item.itemId == R.id.menu_settings) {
-            connectDialog.show(supportFragmentManager, null)
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
             true
         } else super.onOptionsItemSelected(item)
     }
