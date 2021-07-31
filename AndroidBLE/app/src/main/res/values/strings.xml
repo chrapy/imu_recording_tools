@@ -57,4 +57,9 @@
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
     <string name="title_activity_settings">SettingsActivity</string>
+
+    <!-- Preferences -->
+    <string name="fixedRecLength_title">Set a fixed recording length</string>
+    <string name="fixRecLen_summary_on">Stops the recording after a fixed amount of time </string>
+    <string name="fixRecLen_summary_off">The recording needs to be stopped manually</string>
 </resources>
