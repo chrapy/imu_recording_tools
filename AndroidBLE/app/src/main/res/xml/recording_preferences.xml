@@ -18,20 +18,39 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Start Recording Timer">
+    <PreferenceCategory app:title="Pre-Recording Timer">
 
 
         <SwitchPreferenceCompat
             app:key="PreRecTimer"
-            app:title="@string/startRecTimer_title"
             app:summaryOff="@string/startRecTimer_summary_off"
-            app:summaryOn="@string/startRecTimer_summary_on"/>
+            app:summaryOn="@string/startRecTimer_summary_on"
+            app:title="@string/startRecTimer_title" />
 
         <EditTextPreference
             app:dependency="PreRecTimer"
             app:key="SetPreRecTimer"
             app:title="@string/startRecTimer_summary_title"
             app:useSimpleSummaryProvider="true" />
+
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Label Recording">
+        <SwitchPreferenceCompat
+            app:key="labelRecording"
+            app:title="Label the recording"
+            app:summaryOff="No label will be attached to the recording"
+            app:summaryOn="Label the recording in the recording screen"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Add Notes">
+        <SwitchPreferenceCompat
+            app:key="addNotes"
+            app:title="Add notes to the recording"
+            app:summaryOn="You are able to take notes after the recording ended. They will be saved in the recording "
+            app:summaryOff=""/>
 
 
     </PreferenceCategory>
