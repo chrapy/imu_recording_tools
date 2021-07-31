@@ -36,7 +36,7 @@ class SettingsActivity : AppCompatActivity(),
             true
         } else super.onOptionsItemSelected(item)
     }
-    
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         // Save current activity title so we can set it again after a configuration change
@@ -78,15 +78,15 @@ class SettingsActivity : AppCompatActivity(),
         }
     }
 
-    class MessagesFragment : PreferenceFragmentCompat() {
+    class RecordingFragment : PreferenceFragmentCompat() {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-            setPreferencesFromResource(R.xml.messages_preferences, rootKey)
+            setPreferencesFromResource(R.xml.recording_preferences, rootKey)
         }
     }
 
-    class SyncFragment : PreferenceFragmentCompat() {
+    class PreprocessingFragment : PreferenceFragmentCompat() {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-            setPreferencesFromResource(R.xml.sync_preferences, rootKey)
+            setPreferencesFromResource(R.xml.preprocessing_preferences, rootKey)
         }
     }
 }

@@ -1,0 +1,39 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="Recording Length">
+
+
+        <SwitchPreferenceCompat
+            app:key="FixRecLen"
+            app:title="@string/enableFixRecLen_title"
+            app:summaryOff="@string/fixRecLen_summary_off"
+            app:summaryOn="@string/fixRecLen_summary_on"/>
+
+        <EditTextPreference
+            app:dependency="FixRecLen"
+            app:key="SetFixRecLen"
+            app:title="@string/fixRecLen_summary_title"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Start Recording Timer">
+
+
+        <SwitchPreferenceCompat
+            app:key="PreRecTimer"
+            app:title="@string/startRecTimer_title"
+            app:summaryOff="@string/startRecTimer_summary_off"
+            app:summaryOn="@string/startRecTimer_summary_on"/>
+
+        <EditTextPreference
+            app:dependency="PreRecTimer"
+            app:key="SetPreRecTimer"
+            app:title="@string/startRecTimer_summary_title"
+            app:useSimpleSummaryProvider="true" />
+
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -1,15 +1,15 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <Preference
-        app:fragment="com.pascaldornfeld.gsdble.SettingsActivity$MessagesFragment"
-        app:icon="@drawable/messages"
-        app:key="messages_header"
-        app:title="@string/messages_header" />
+        app:fragment="com.pascaldornfeld.gsdble.SettingsActivity$RecordingFragment"
+        app:icon="?android:attr/listChoiceIndicatorSingle"
+        app:key="recording_header"
+        app:title="@string/recording_header" />
 
     <Preference
-        app:fragment="com.pascaldornfeld.gsdble.SettingsActivity$SyncFragment"
-        app:icon="@drawable/sync"
-        app:key="sync_header"
-        app:title="@string/sync_header" />
+        app:fragment="com.pascaldornfeld.gsdble.SettingsActivity$PreprocessingFragment"
+        app:icon="@drawable/preprocess"
+        app:key="preprocessing_header"
+        app:title="@string/preprocessing_header" />
 
 </PreferenceScreen>

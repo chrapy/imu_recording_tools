@@ -43,8 +43,8 @@
         <item>@string/customLabel</item>
     </string-array>
     <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
+    <string name="recording_header">Recording</string>
+    <string name="preprocessing_header">Preprocessing</string>
 
     <!-- Messages Preferences -->
     <string name="signature_title">Your signature</string>
@@ -56,10 +56,16 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
-    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="title_activity_settings">Settings</string>
 
     <!-- Preferences -->
-    <string name="fixedRecLength_title">Set a fixed recording length</string>
+    <string name="enableFixRecLen_title">Set a fixed recording duration</string>
     <string name="fixRecLen_summary_on">Stops the recording after a fixed amount of time </string>
     <string name="fixRecLen_summary_off">The recording needs to be stopped manually</string>
+    <string name="fixRecLen_summary_title">recording duration (seconds):</string>
+
+    <string name="startRecTimer_title">Pre-recording countdown</string>
+    <string name="startRecTimer_summary_on">The recording starts after a fixed amount of time </string>
+    <string name="startRecTimer_summary_off">The recording starts when pressing the start record button</string>
+    <string name="startRecTimer_summary_title">pre-record timer duration (seconds):</string>
 </resources>
