@@ -14,7 +14,8 @@
             app:dependency="FixRecLen"
             app:key="SetFixRecLen"
             app:title="@string/fixRecLen_summary_title"
-            app:useSimpleSummaryProvider="true" />
+            app:useSimpleSummaryProvider="true"
+            />
 
     </PreferenceCategory>
 

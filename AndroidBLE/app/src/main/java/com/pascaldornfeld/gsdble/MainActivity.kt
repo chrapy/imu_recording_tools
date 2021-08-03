@@ -1,6 +1,7 @@
 package com.pascaldornfeld.gsdble
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -8,6 +9,7 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
@@ -22,9 +24,13 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.annotation.IntegerRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.preference.Preference
+import androidx.preference.PreferenceManager
+import androidx.preference.PreferenceManager.getDefaultSharedPreferences
 import com.pascaldornfeld.gsdble.connected.DeviceViewModel
 import com.pascaldornfeld.gsdble.connected.hardware_library.DeviceManager
 import com.pascaldornfeld.gsdble.connected.hardware_library.models.ImuConfig
@@ -38,13 +44,12 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-
 class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity,
     NumberPicker.OnValueChangeListener {
     private var bleReady = true
     private val bluetoothAdapter: BluetoothAdapter? by lazy { (getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager?)?.adapter }
     private lateinit var connectDialog: ScanDialogFragment
-    //private lateinit var settingsDialog: SettingsDialogFragment
+
     private var recorder: GestureData? = null
     private lateinit var activitySpinner: Spinner
     private var isRecording = false
@@ -56,6 +61,13 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private lateinit var recordingLengthInput : TextView
     private lateinit var countDownText : TextView
     private lateinit var vibrator : Vibrator
+
+    //Preferences
+    private var sharedPrefs: SharedPreferences? = null
+    //private var fixRecLen:Boolean = true
+    private var recLen = 5
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,6 +100,9 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         vRecordButton.setOnClickListener {
             synchronized(vRecordButton) {
                 if (!isRecording) { // currently not recording
+                    //get the delays from preferences
+                    recordingStartDelay = sharedPrefs!!.getString("SetPreRecTimer", "-1").toLong() // delay to start recording after button press (in ms)
+                    recordingAutostopDelay = sharedPrefs!!.getString("SetFixRecLen", "-1").toLong()
                     // start recording after delay
                     startCountDown = object : CountDownTimer(recordingStartDelay, 1000) {
                         override fun onTick(millisUntilFinished: Long) {
@@ -110,9 +125,13 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 }
             }
         }
+
     }
 
     private fun startRecording() {
+
+        recLen = Integer.valueOf(sharedPrefs!!.getString("SetFixRecLen", "-1"))
+
         stopCountDown = object : CountDownTimer(recordingAutostopDelay, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 countDownText.text = getString(R.string.stopCountdownPrefix) +
@@ -351,7 +370,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     }
 
     fun onLengthInputClick(view: View) {
-        val d = Dialog(this@MainActivity)
+        /*val d = Dialog(this@MainActivity)
         d.setTitle("Set Recording Length")
         d.setContentView(R.layout.number_picker_dialog)
         val setButton: Button = d.findViewById(R.id.setButton) as Button
@@ -372,6 +391,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             d.dismiss()
         }
         d.show()
+
+         */
     }
 
     /**

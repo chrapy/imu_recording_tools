@@ -30,12 +30,17 @@ class SettingsActivity : AppCompatActivity(),
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
+
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         return if (item != null) {
             onBackPressed()
             true
         } else super.onOptionsItemSelected(item)
     }
+
+
+
+
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
