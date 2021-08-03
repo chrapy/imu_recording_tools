@@ -21,7 +21,7 @@ object FileOperations {
             // create filename
             synchronized(FileOperations) {
                 var fileNamePostfix = 2
-                val recordingName = gestureData.label.toString() + "_" + gestureData.startTime.toString()
+                val recordingName = gestureData.label.toString()  + gestureData.startTime.toString()
                 var file = getFileFromPrefixAndCreateParent(recordingName)
                 while (file.exists()) {
                     file = getFileFromPrefixAndCreateParent(

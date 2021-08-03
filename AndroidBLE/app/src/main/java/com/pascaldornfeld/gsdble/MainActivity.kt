@@ -76,7 +76,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         sharedPrefs = getDefaultSharedPreferences(this)
 
         // Initialize textViews
-        recordingLengthInput = findViewById(com.pascaldornfeld.gsdble.R.id.recordingLengthInput)
         countDownText = findViewById(R.id.countDownText)
 
         // Initialize spinner for label selection
@@ -102,6 +101,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         vRecordButton.setOnClickListener {
             synchronized(vRecordButton) {
                 if (!isRecording) { // currently not recording
+
                     //get the delays from preferences
                     try {
                         recordingStartDelay = sharedPrefs!!.getString("SetPreRecTimer", "-1")
@@ -110,7 +110,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                             Toast.makeText(this, "Timer value must be a number & is set to 0!", Toast.LENGTH_LONG).show()
                             sharedPrefs.edit().putString("SetPreRecTimer","0").apply()
                         }
-
                     try {
                         recordingAutostopDelay =
                             sharedPrefs!!.getString("SetFixRecLen", "-1").toLong() * 1000L
@@ -122,7 +121,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
 
                     // start recording after delay if desired
-
                     if (sharedPrefs.getBoolean("PreRecTimer", false)){
                         startCountDown = object : CountDownTimer(recordingStartDelay, 1000) {
                             override fun onTick(millisUntilFinished: Long) {
@@ -211,8 +209,11 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 }
 
             // show dialog to add textual note to recording
-            showNoteDialog()
-
+            if(sharedPrefs.getBoolean("addNotes", false)){
+                showNoteDialog()
+            } else {
+                endRecording()
+            }
             vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
         }
 
@@ -398,32 +399,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         // write recorder object into file
         recorder?.let { FileOperations.writeGestureFile(it) }
         recorder = null
-    }
-
-    fun onLengthInputClick(view: View) {
-        /*val d = Dialog(this@MainActivity)
-        d.setTitle("Set Recording Length")
-        d.setContentView(R.layout.number_picker_dialog)
-        val setButton: Button = d.findViewById(R.id.setButton) as Button
-        val cancelButton: Button = d.findViewById(R.id.cancelButton) as Button
-        val numPicker: NumberPicker = d.findViewById(R.id.numberPicker) as NumberPicker
-        numPicker.maxValue = 120
-        numPicker.minValue = 5
-        numPicker.value = (recordingAutostopDelay / 1000).toInt()
-        numPicker.wrapSelectorWheel = false
-        numPicker.setOnValueChangedListener(this)
-        setButton.setOnClickListener {
-            recordingAutostopDelay = numPicker.value.toLong() * 1000
-            recordingLengthInput.text = numPicker.value.toString() + "s"
-            d.dismiss()
-        }
-
-        cancelButton.setOnClickListener {
-            d.dismiss()
-        }
-        d.show()
-
-         */
     }
 
     /**
