@@ -7,43 +7,14 @@
     tools:context=".MainActivity">
 
     <TextView
-        android:id="@+id/recordingLengthText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="@string/maxRecordingLengthText"
-        android:textSize="16dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/recordingLengthInput"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="10s"
-        android:textSize="16dp"
-        android:textColor="@color/ap_white"
-        android:textStyle=""
-        android:onClick="onLengthInputClick"
-        android:clickable="true"
-        app:layout_constraintBottom_toBottomOf="@+id/recordingLengthText"
-        app:layout_constraintStart_toEndOf="@+id/recordingLengthText"
-        app:layout_constraintTop_toTopOf="@+id/recordingLengthText" />
-
-    <TextView
         android:id="@+id/countDownText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="8dp"
-        android:layout_marginStart="16dp"
         android:text=""
         android:textSize="16dp"
-        app:layout_constraintBottom_toBottomOf="@+id/recordingLengthText"
         app:layout_constraintEnd_toEndOf="@+id/vRecordButton"
-        app:layout_constraintStart_toEndOf="@+id/recordingLengthInput"
-        app:layout_constraintTop_toTopOf="@id/recordingLengthText" />
+        tools:layout_editor_absoluteY="8dp" />
 
     <Button
         android:id="@+id/vRecordButton"

@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private lateinit var vibrator : Vibrator
 
     //Preferences
-    private var sharedPrefs: SharedPreferences? = null
+    private lateinit var sharedPrefs : SharedPreferences
     //private var fixRecLen:Boolean = true
     private var recLen = 5
 
@@ -72,6 +72,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
+
+        sharedPrefs = getDefaultSharedPreferences(this)
 
         // Initialize textViews
         recordingLengthInput = findViewById(com.pascaldornfeld.gsdble.R.id.recordingLengthInput)
@@ -101,22 +103,46 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             synchronized(vRecordButton) {
                 if (!isRecording) { // currently not recording
                     //get the delays from preferences
-                    recordingStartDelay = sharedPrefs!!.getString("SetPreRecTimer", "-1").toLong() // delay to start recording after button press (in ms)
-                    recordingAutostopDelay = sharedPrefs!!.getString("SetFixRecLen", "-1").toLong()
-                    // start recording after delay
-                    startCountDown = object : CountDownTimer(recordingStartDelay, 1000) {
-                        override fun onTick(millisUntilFinished: Long) {
-                            countDownText.text = getString(R.string.startCountdownPrefix) +
-                                    ((millisUntilFinished / 1000)+1) +
-                                    getString(R.string.secondPostfix)
+                    try {
+                        recordingStartDelay = sharedPrefs!!.getString("SetPreRecTimer", "-1")
+                            .toLong() * 1000L
+                        } catch (ex:NumberFormatException){
+                            Toast.makeText(this, "Timer value must be a number & is set to 0!", Toast.LENGTH_LONG).show()
+                            sharedPrefs.edit().putString("SetPreRecTimer","0").apply()
                         }
 
-                        override fun onFinish() {
-                            countDownText.text = ""
-                            startRecording()
-                        }
+                    try {
+                        recordingAutostopDelay =
+                            sharedPrefs!!.getString("SetFixRecLen", "-1").toLong() * 1000L
+                    } catch (ex:NumberFormatException){
+                        Toast.makeText(this, "Timer value must be a number & is set to 0!", Toast.LENGTH_SHORT).show()
+
+                        sharedPrefs.edit().putString("SetFixRecLen","0").apply()
                     }
-                    startCountDown.start()
+
+
+                    // start recording after delay if desired
+
+                    if (sharedPrefs.getBoolean("PreRecTimer", false)){
+                        startCountDown = object : CountDownTimer(recordingStartDelay, 1000) {
+                            override fun onTick(millisUntilFinished: Long) {
+                                countDownText.text = getString(R.string.startCountdownPrefix) +
+                                        ((millisUntilFinished / 1000) + 1) +
+                                        getString(R.string.secondPostfix)
+                            }
+
+                            override fun onFinish() {
+                                countDownText.text = ""
+                                startRecording()
+                            }
+                        }
+                        startCountDown.start()
+                    } else {
+                        startRecording()
+                    }
+
+
+
 
                     isRecording = true
                     vRecordButton.text = getString(R.string.stop)
@@ -130,20 +156,20 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
     private fun startRecording() {
 
-        recLen = Integer.valueOf(sharedPrefs!!.getString("SetFixRecLen", "-1"))
+        if(sharedPrefs.getBoolean("FixRecLen", false)) {
+            stopCountDown = object : CountDownTimer(recordingAutostopDelay, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    countDownText.text = getString(R.string.stopCountdownPrefix) +
+                            ((millisUntilFinished / 1000) + 1) +
+                            getString(R.string.secondPostfix)
+                }
 
-        stopCountDown = object : CountDownTimer(recordingAutostopDelay, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                countDownText.text = getString(R.string.stopCountdownPrefix) +
-                        ((millisUntilFinished / 1000)+1) +
-                        getString(R.string.secondPostfix)
+                override fun onFinish() {
+                    stopRecording()
+                }
             }
-
-            override fun onFinish() {
-                stopRecording()
-            }
+            stopCountDown?.start()
         }
-        stopCountDown?.start()
         vibrator.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE))
 
         // start the recording
@@ -165,8 +191,13 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     }
 
     private fun stopRecording() {
-        startCountDown.cancel()
-        stopCountDown?.cancel()
+        if (sharedPrefs.getBoolean("PreRecTimer", false)) {
+            startCountDown.cancel()
+        }
+        if(sharedPrefs.getBoolean("FixRecLen", false)){
+            stopCountDown?.cancel()
+        }
+
 
         if(recorder != null) { // make sure there is a recording running
             recorder!!.endTime = SimpleDateFormat("yyyy-MM-dd--HH-mm-ss", Locale.US)
