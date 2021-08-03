@@ -58,14 +58,11 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private var recordingAutostopDelay = 10000L // delay after which a recording is automatically stopped (in ms)
     private lateinit var startCountDown : CountDownTimer
     private var stopCountDown : CountDownTimer? = null
-    private lateinit var recordingLengthInput : TextView
     private lateinit var countDownText : TextView
     private lateinit var vibrator : Vibrator
 
     //Preferences
     private lateinit var sharedPrefs : SharedPreferences
-    //private var fixRecLen:Boolean = true
-    private var recLen = 5
 
 
 

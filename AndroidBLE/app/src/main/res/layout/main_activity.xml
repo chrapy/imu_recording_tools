@@ -77,14 +77,16 @@
     <Button
         android:id="@+id/timestampButton"
         android:layout_width="91dp"
-        android:layout_height="52dp"
+        android:layout_height="wrap_content"
         android:text="Mark Timestamp"
         android:textAlignment="center"
         android:textSize="11sp"
         app:layout_constraintBottom_toTopOf="@+id/conectedDeviceList"
         app:layout_constraintEnd_toStartOf="@+id/vRecordButton"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/activitySelector"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
