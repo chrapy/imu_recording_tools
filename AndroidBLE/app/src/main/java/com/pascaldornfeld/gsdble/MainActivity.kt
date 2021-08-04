@@ -1,8 +1,6 @@
 package com.pascaldornfeld.gsdble
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.app.Dialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
@@ -22,14 +20,10 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import android.widget.*
-import androidx.annotation.IntegerRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.preference.Preference
-import androidx.preference.PreferenceManager
 import androidx.preference.PreferenceManager.getDefaultSharedPreferences
 import com.pascaldornfeld.gsdble.connected.DeviceViewModel
 import com.pascaldornfeld.gsdble.connected.hardware_library.DeviceManager
@@ -44,6 +38,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
+
 class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity,
     NumberPicker.OnValueChangeListener {
     private var bleReady = true
@@ -51,7 +46,9 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private lateinit var connectDialog: ScanDialogFragment
 
     private var recorder: GestureData? = null
-    private lateinit var activitySpinner: Spinner
+    private lateinit var recLabel:String
+    private lateinit var labelTextView : TextView
+    //private lateinit var activitySpinner: Spinner
     private var isRecording = false
 
     private var recordingStartDelay = 3000L // delay to start recording after button press (in ms)
@@ -76,8 +73,16 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         countDownText = findViewById(R.id.countDownText)
 
         // Initialize spinner for label selection
-        activitySpinner = findViewById(R.id.activitySelector)
-        activitySpinner.adapter = AdapterWithCustomItem(this)
+
+
+        labelTextView = this.findViewById(R.id.label)
+
+
+        //das hier muss wo anders hin, dann kann ich recLabel weg lassen
+        recLabel = labelTextView.text.toString()
+
+        //activitySpinner = findViewById(R.id.activitySelector)
+        //activitySpinner.adapter = AdapterWithCustomItem(this)
 
         // Initialize vibrator
         vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
@@ -103,17 +108,25 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                     try {
                         recordingStartDelay = sharedPrefs!!.getString("SetPreRecTimer", "-1")
                             .toLong() * 1000L
-                        } catch (ex:NumberFormatException){
-                            Toast.makeText(this, "Timer value must be a number & is set to 0!", Toast.LENGTH_LONG).show()
-                            sharedPrefs.edit().putString("SetPreRecTimer","0").apply()
+                        } catch (ex: NumberFormatException){
+                            Toast.makeText(
+                                this,
+                                "Timer value must be a number & is set to 0!",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            sharedPrefs.edit().putString("SetPreRecTimer", "0").apply()
                         }
                     try {
                         recordingAutostopDelay =
                             sharedPrefs!!.getString("SetFixRecLen", "-1").toLong() * 1000L
-                    } catch (ex:NumberFormatException){
-                        Toast.makeText(this, "Timer value must be a number & is set to 0!", Toast.LENGTH_SHORT).show()
+                    } catch (ex: NumberFormatException){
+                        Toast.makeText(
+                            this,
+                            "Timer value must be a number & is set to 0!",
+                            Toast.LENGTH_SHORT
+                        ).show()
 
-                        sharedPrefs.edit().putString("SetFixRecLen","0").apply()
+                        sharedPrefs.edit().putString("SetFixRecLen", "0").apply()
                     }
 
 
@@ -177,10 +190,11 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 extremityDataArray.add(extremityData)
             }
 
-        val spinnerAdapter: AdapterWithCustomItem = activitySpinner.adapter as AdapterWithCustomItem
+        //val spinnerAdapter: AdapterWithCustomItem = activitySpinner.adapter as AdapterWithCustomItem
         recorder = GestureData(
             extremityDataArray.toTypedArray(),
-            spinnerAdapter.getLabel(activitySpinner.selectedItemPosition).toString(),
+            recLabel,
+            //spinnerAdapter.getLabel(activitySpinner.selectedItemPosition).toString(),
             this
         )
     }
@@ -406,6 +420,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             vRecordButton.performClick()
     }
 
+    /*
     class AdapterWithCustomItem(context: Context?) : ArrayAdapter<String?>(
         context,
         android.R.layout.simple_spinner_dropdown_item,
@@ -450,7 +465,28 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         }
     }
 
+     */
+
     override fun onValueChange(p0: NumberPicker?, p1: Int, p2: Int) {
         // nothing to do
+    }
+
+    public fun setLabel(v: View){
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(getString(R.string.changeLabel))
+
+        // Set up the input
+        val input = EditText(this)
+        input.inputType = InputType.TYPE_CLASS_TEXT
+        builder.setView(input)
+
+        // Set up OK button
+        builder.setPositiveButton(
+            getString(R.string.ok)
+        ) { dialog, which ->
+            recLabel= input.text.toString()
+        }
+
+        builder.show()
     }
 }

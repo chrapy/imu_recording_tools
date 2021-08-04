@@ -22,6 +22,7 @@
     <string name="addNoteTitle">Add note to recording</string>
     <string name="ok">OK</string>
     <string name="defaultLabel">default_label</string>
+    <string name="changeLabel">change label</string>
 
 
     <string name="labelInputTitle">Enter Custom Label</string>

@@ -34,6 +34,7 @@
         app:layout_constraintStart_toEndOf="@+id/countDownText"
         app:layout_constraintTop_toTopOf="parent" />
 
+
     <TextView
         android:id="@+id/labelText"
         android:layout_width="0dp"
@@ -41,22 +42,9 @@
         android:layout_marginHorizontal="8dp"
         android:text="@string/labelIndicator"
         android:textSize="16dp"
-        app:layout_constraintBottom_toBottomOf="@+id/activitySelector"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/activitySelector" />
-
-    <Spinner
-        android:id="@+id/activitySelector"
-        android:layout_width="113dp"
-        android:layout_height="39dp"
-        android:entries="@array/activities"
-        android:paddingEnd="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/conectedDeviceList"
-        app:layout_constraintEnd_toEndOf="@+id/countDownText"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/labelText"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.47" />
+        app:layout_constraintBottom_toBottomOf="@+id/label"
+        app:layout_constraintTop_toTopOf="@+id/label"
+        tools:layout_editor_absoluteX="16dp" />
 
     <ScrollView
         android:id="@+id/conectedDeviceList"
@@ -84,9 +72,26 @@
         app:layout_constraintBottom_toTopOf="@+id/conectedDeviceList"
         app:layout_constraintEnd_toStartOf="@+id/vRecordButton"
         app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/activitySelector"
+        app:layout_constraintStart_toEndOf="@+id/label"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
+
+    <TextView
+        android:id="@+id/label"
+        android:layout_width="75dp"
+        android:layout_height="28dp"
+        android:clickable="true"
+        android:onClick="setLabel"
+        android:text="insert Label"
+        android:textAlignment="viewStart"
+        android:textSize="20sp"
+        android:textStyle="italic"
+        app:layout_constraintBottom_toBottomOf="@+id/timestampButton"
+        app:layout_constraintEnd_toStartOf="@+id/vRecordButton"
+        app:layout_constraintHorizontal_bias="0.152"
+        app:layout_constraintStart_toEndOf="@+id/labelText"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.571" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
