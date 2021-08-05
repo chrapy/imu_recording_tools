@@ -48,7 +48,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private var recorder: GestureData? = null
     private lateinit var recLabel:String
     private lateinit var labelTextView : TextView
-    //private lateinit var activitySpinner: Spinner
     private var isRecording = false
 
     private var recordingStartDelay = 3000L // delay to start recording after button press (in ms)
@@ -72,17 +71,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         // Initialize textViews
         countDownText = findViewById(R.id.countDownText)
 
-        // Initialize spinner for label selection
-
-
+        // Initialize TextView for label selection
         labelTextView = this.findViewById(R.id.label)
-
-
-        //das hier muss wo anders hin, dann kann ich recLabel weg lassen
-        recLabel = labelTextView.text.toString()
-
-        //activitySpinner = findViewById(R.id.activitySelector)
-        //activitySpinner.adapter = AdapterWithCustomItem(this)
 
         // Initialize vibrator
         vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
@@ -125,7 +115,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                             "Timer value must be a number & is set to 0!",
                             Toast.LENGTH_SHORT
                         ).show()
-
                         sharedPrefs.edit().putString("SetFixRecLen", "0").apply()
                     }
 
@@ -148,10 +137,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                     } else {
                         startRecording()
                     }
-
-
-
-
                     isRecording = true
                     vRecordButton.text = getString(R.string.stop)
                 } else { // currently recording
@@ -190,6 +175,11 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 extremityDataArray.add(extremityData)
             }
 
+        if (sharedPrefs.getBoolean("labelRecording", false)){
+            recLabel = labelTextView.text.toString()+"_"
+        }else{
+            recLabel=""
+        }
         //val spinnerAdapter: AdapterWithCustomItem = activitySpinner.adapter as AdapterWithCustomItem
         recorder = GestureData(
             extremityDataArray.toTypedArray(),
@@ -315,6 +305,14 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         if (checkPermissions() && checkBluetoothEnabled() && checkLocationEnabled()) {
             bleReady = true
             invalidateOptionsMenu()
+        }
+
+        if (sharedPrefs.getBoolean("labelRecording", false)){
+            findViewById<TextView>(R.id.labelText).visibility = View.VISIBLE
+            findViewById<TextView>(R.id.label).visibility = View.VISIBLE
+        }else{
+            findViewById<TextView>(R.id.labelText).visibility = View.INVISIBLE
+            findViewById<TextView>(R.id.label).visibility = View.INVISIBLE
         }
     }
 
@@ -484,7 +482,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         builder.setPositiveButton(
             getString(R.string.ok)
         ) { dialog, which ->
-            recLabel= input.text.toString()
+
+            labelTextView.text = input.text.toString()
         }
 
         builder.show()

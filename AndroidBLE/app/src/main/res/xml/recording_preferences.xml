@@ -42,7 +42,7 @@
             app:key="labelRecording"
             app:title="Label the recording"
             app:summaryOff="No label will be attached to the recording"
-            app:summaryOn="Label the recording in the recording screen"/>
+            app:summaryOn="Label the recording in the recording screen" />
 
     </PreferenceCategory>
 
