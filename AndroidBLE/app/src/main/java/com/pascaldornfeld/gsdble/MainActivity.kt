@@ -445,13 +445,14 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     fun markTimeStamp (v:View){
         if(isRecording){
             Toast.makeText(this, "marked timestamp!", Toast.LENGTH_SHORT).show()
-
-            recorder!!.datas!![recorder!!.datas!!.lastIndex].accData.timeStamp.let {
-                markedTimeStamps.add(
-                    it.last())
+            try {
+                recorder!!.datas!![recorder!!.datas!!.lastIndex].accData.timeStamp.let {
+                    markedTimeStamps.add(
+                        it.last())
+                }
+            } catch (e: Exception){
+                Toast.makeText(this, "no recordable devices connected", Toast.LENGTH_LONG).show()
             }
-
-
         }
 
     }
