@@ -69,6 +69,7 @@
         android:text="Mark Timestamp"
         android:textAlignment="center"
         android:textSize="11sp"
+        android:onClick="markTimeStamp"
         app:layout_constraintBottom_toTopOf="@+id/conectedDeviceList"
         app:layout_constraintEnd_toStartOf="@+id/vRecordButton"
         app:layout_constraintHorizontal_bias="1.0"

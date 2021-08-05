@@ -32,6 +32,7 @@ import com.pascaldornfeld.gsdble.connected.view.DeviceFragment
 import com.pascaldornfeld.gsdble.file_dumping.ExtremityData
 import com.pascaldornfeld.gsdble.file_dumping.FileOperations
 import com.pascaldornfeld.gsdble.file_dumping.GestureData
+import com.pascaldornfeld.gsdble.file_dumping.SensorData
 import com.pascaldornfeld.gsdble.scan.ScanDialogFragment
 import kotlinx.android.synthetic.main.main_activity.*
 import java.text.SimpleDateFormat
@@ -56,6 +57,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private var stopCountDown : CountDownTimer? = null
     private lateinit var countDownText : TextView
     private lateinit var vibrator : Vibrator
+
+    private var markedTimeStamps: ArrayList<Long> = ArrayList()
 
     //Preferences
     private lateinit var sharedPrefs : SharedPreferences
@@ -184,7 +187,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         recorder = GestureData(
             extremityDataArray.toTypedArray(),
             recLabel,
-            //spinnerAdapter.getLabel(activitySpinner.selectedItemPosition).toString(),
             this
         )
     }
@@ -209,7 +211,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                     DeviceViewModel.forDeviceFragment(it).extremityData = null
                 }
 
-            // show dialog to add textual note to recording
+            recorder!!.markedTimeStamps = markedTimeStamps
+            // show dialog to add textual note to recording if desired
             if(sharedPrefs.getBoolean("addNotes", false)){
                 showNoteDialog()
             } else {
@@ -245,9 +248,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             true
         } else super.onOptionsItemSelected(item)
     }
-
-
-
 
 
     /**
@@ -418,58 +418,11 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             vRecordButton.performClick()
     }
 
-    /*
-    class AdapterWithCustomItem(context: Context?) : ArrayAdapter<String?>(
-        context,
-        android.R.layout.simple_spinner_dropdown_item,
-        context!!.resources.getStringArray(R.array.activities)
-    ) {
-        private var dialogActive = false
-        private var mCustomText = ""
-        override fun getView(
-            position: Int,
-            convertView: View?,
-            parent: ViewGroup?
-        ): View {
-            val view = super.getView(position, convertView, parent)
-            if ( getItem(position).toString() == context.getString(R.string.customLabel) && !dialogActive) { // custom item selected
-                dialogActive = true
-                val builder = AlertDialog.Builder(context)
-                builder.setTitle(context.getString(R.string.labelInputTitle))
-
-                // Set up the input
-                val input = EditText(context)
-                input.inputType = InputType.TYPE_CLASS_TEXT
-                builder.setView(input)
-
-                // Set up OK button
-                builder.setPositiveButton(context.getString(R.string.ok)) { dialog, which ->
-                    mCustomText = input.text.toString()
-                    val tv: TextView = view.findViewById<View>(android.R.id.text1) as TextView
-                    tv.text = mCustomText
-                }
-                builder.show()
-            } else if (getItem(position).toString() != context.getString(R.string.customLabel)) {
-                dialogActive = false
-            }
-            return view
-        }
-
-        fun getLabel(position: Int): String? {
-            if (super.getItem(position).toString() == context.getString(R.string.customLabel)) {
-                return mCustomText
-            }
-            return super.getItem(position)
-        }
-    }
-
-     */
-
     override fun onValueChange(p0: NumberPicker?, p1: Int, p2: Int) {
         // nothing to do
     }
 
-    public fun setLabel(v: View){
+    fun setLabel(v: View){
         val builder = AlertDialog.Builder(this)
         builder.setTitle(getString(R.string.changeLabel))
 
@@ -487,5 +440,19 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         }
 
         builder.show()
+    }
+
+    fun markTimeStamp (v:View){
+        if(isRecording){
+            Toast.makeText(this, "marked timestamp!", Toast.LENGTH_SHORT).show()
+
+            recorder!!.datas!![recorder!!.datas!!.lastIndex].accData.timeStamp.let {
+                markedTimeStamps.add(
+                    it.last())
+            }
+
+
+        }
+
     }
 }

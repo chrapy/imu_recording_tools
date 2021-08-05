@@ -16,6 +16,7 @@ data class GestureData(
     val deviceId: String? = null, // smartphone id
     var label: String = "default_label", // gesture class label
     var note: String = "",
+    var markedTimeStamps: ArrayList<Long> = ArrayList(), //marked Time stamps of first sensor
     @Suppress("ArrayInDataClass") val datas: Array<ExtremityData> = arrayOf()
 ) {
     @SuppressLint("HardwareIds")
