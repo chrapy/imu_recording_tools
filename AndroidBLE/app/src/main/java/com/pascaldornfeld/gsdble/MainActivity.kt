@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothManager
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -32,12 +33,12 @@ import com.pascaldornfeld.gsdble.connected.view.DeviceFragment
 import com.pascaldornfeld.gsdble.file_dumping.ExtremityData
 import com.pascaldornfeld.gsdble.file_dumping.FileOperations
 import com.pascaldornfeld.gsdble.file_dumping.GestureData
-import com.pascaldornfeld.gsdble.file_dumping.SensorData
 import com.pascaldornfeld.gsdble.scan.ScanDialogFragment
 import kotlinx.android.synthetic.main.main_activity.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.properties.Delegates
 
 
 class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity,
@@ -59,6 +60,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private lateinit var vibrator : Vibrator
 
     private var markedTimeStamps: ArrayList<Long> = ArrayList()
+    private var connectedSensors : Int = 0
+    private var lostConnection : Boolean = false
 
     //Preferences
     private lateinit var sharedPrefs : SharedPreferences
@@ -96,12 +99,14 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         vRecordButton.setOnClickListener {
             synchronized(vRecordButton) {
                 if (!isRecording) { // currently not recording
-
-                    //get the delays from preferences
-                    try {
-                        recordingStartDelay = sharedPrefs!!.getString("SetPreRecTimer", "-1")
-                            .toLong() * 1000L
-                        } catch (ex: NumberFormatException){
+                    if(supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().isEmpty()){
+                        Toast.makeText(this, "no recordable devices connected", Toast.LENGTH_LONG).show()
+                    }else {
+                        //get the delays from preferences
+                        try {
+                            recordingStartDelay = sharedPrefs!!.getString("SetPreRecTimer", "-1")
+                                .toLong() * 1000L
+                        } catch (ex: NumberFormatException) {
                             Toast.makeText(
                                 this,
                                 "Timer value must be a number & is set to 0!",
@@ -109,40 +114,44 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                             ).show()
                             sharedPrefs.edit().putString("SetPreRecTimer", "0").apply()
                         }
-                    try {
-                        recordingAutostopDelay =
-                            sharedPrefs!!.getString("SetFixRecLen", "-1").toLong() * 1000L
-                    } catch (ex: NumberFormatException){
-                        Toast.makeText(
-                            this,
-                            "Timer value must be a number & is set to 0!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        sharedPrefs.edit().putString("SetFixRecLen", "0").apply()
-                    }
-
-
-                    // start recording after delay if desired
-                    if (sharedPrefs.getBoolean("PreRecTimer", false)){
-                        startCountDown = object : CountDownTimer(recordingStartDelay, 1000) {
-                            override fun onTick(millisUntilFinished: Long) {
-                                countDownText.text = getString(R.string.startCountdownPrefix) +
-                                        ((millisUntilFinished / 1000) + 1) +
-                                        getString(R.string.secondPostfix)
-                            }
-
-                            override fun onFinish() {
-                                countDownText.text = ""
-                                startRecording()
-                            }
+                        try {
+                            recordingAutostopDelay =
+                                sharedPrefs!!.getString("SetFixRecLen", "-1").toLong() * 1000L
+                        } catch (ex: NumberFormatException) {
+                            Toast.makeText(
+                                this,
+                                "Timer value must be a number & is set to 0!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            sharedPrefs.edit().putString("SetFixRecLen", "0").apply()
                         }
-                        startCountDown.start()
-                    } else {
-                        startRecording()
+
+
+                        // start recording after delay if desired
+                        if (sharedPrefs.getBoolean("PreRecTimer", false)) {
+                            startCountDown = object : CountDownTimer(recordingStartDelay, 1000) {
+                                override fun onTick(millisUntilFinished: Long) {
+                                    countDownText.text = getString(R.string.startCountdownPrefix) +
+                                            ((millisUntilFinished / 1000) + 1) +
+                                            getString(R.string.secondPostfix)
+                                }
+
+                                override fun onFinish() {
+                                    countDownText.text = ""
+                                    startRecording()
+                                }
+                            }
+                            startCountDown.start()
+                        } else {
+                            startRecording()
+                        }
+                        isRecording = true
+                        vRecordButton.text = getString(R.string.stop)
                     }
-                    isRecording = true
-                    vRecordButton.text = getString(R.string.stop)
-                } else { // currently recording
+                }else { // currently recording
+                    if(supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().size!=connectedSensors){
+                        lostConnection = true
+                    }
                     stopRecording()
                 }
             }
@@ -151,6 +160,9 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     }
 
     private fun startRecording() {
+
+        connectedSensors = supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().size
+
 
         if(sharedPrefs.getBoolean("FixRecLen", false)) {
             stopCountDown = object : CountDownTimer(recordingAutostopDelay, 1000) {
@@ -161,6 +173,9 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 }
 
                 override fun onFinish() {
+                    if(supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().size!=connectedSensors){
+                        lostConnection = true
+                    }
                     stopRecording()
                 }
             }
@@ -198,7 +213,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         if(sharedPrefs.getBoolean("FixRecLen", false)){
             stopCountDown?.cancel()
         }
-
 
         if(recorder != null) { // make sure there is a recording running
             recorder!!.endTime = SimpleDateFormat("yyyy-MM-dd--HH-mm-ss", Locale.US)
@@ -406,7 +420,14 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
     private fun endRecording() {
         // write recorder object into file
-        recorder?.let { FileOperations.writeGestureFile(it) }
+        if (lostConnection) {
+            if(safeIncompleteRec()){
+                recorder?.let { FileOperations.writeGestureFile(it) }
+            }
+            lostConnection = false
+        }else{
+            recorder?.let { FileOperations.writeGestureFile(it) }
+        }
         recorder = null
     }
 
@@ -435,25 +456,52 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         builder.setPositiveButton(
             getString(R.string.ok)
         ) { dialog, which ->
-
             labelTextView.text = input.text.toString()
         }
 
         builder.show()
     }
 
-    fun markTimeStamp (v:View){
+    fun markTimeStamp(v: View){
         if(isRecording){
             Toast.makeText(this, "marked timestamp!", Toast.LENGTH_SHORT).show()
             try {
                 recorder!!.datas!![recorder!!.datas!!.lastIndex].accData.timeStamp.let {
                     markedTimeStamps.add(
-                        it.last())
+                        it.last()
+                    )
                 }
             } catch (e: Exception){
                 Toast.makeText(this, "no recordable devices connected", Toast.LENGTH_LONG).show()
             }
         }
-
     }
+
+    private fun safeIncompleteRec():Boolean{
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Warning!")
+        builder.setMessage("It seems that one or more sensors where disconnected while recording the data. Do you want to safe the recording anyways?")
+
+
+        // Set up Safe button
+        builder.setPositiveButton(
+            "Safe"
+        ) { dialog, which ->
+            //safeRec=true
+        }
+        // Set up Delete button
+        builder.setNegativeButton(
+            "Delete"
+        ) { dialog, which ->
+            //setSafeRec(false)
+        }
+
+        builder.show()
+
+
+
+        return false
+    }
+
 }
