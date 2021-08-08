@@ -226,11 +226,17 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 }
 
             recorder!!.markedTimeStamps = markedTimeStamps
+
+
             // show dialog to add textual note to recording if desired
             if(sharedPrefs.getBoolean("addNotes", false)){
                 showNoteDialog()
             } else {
-                endRecording()
+                if (lostConnection) {
+                    safeIncompleteRec()
+                }else {
+                    endRecording()
+                }
             }
             vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
         }
@@ -412,7 +418,12 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             getString(R.string.ok)
         ) { dialog, which ->
             recorder?.note = input.text.toString()
-            endRecording()
+
+            if (lostConnection) {
+                safeIncompleteRec()
+            }else {
+                endRecording()
+            }
         }
 
         builder.show()
@@ -420,14 +431,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
     private fun endRecording() {
         // write recorder object into file
-        if (lostConnection) {
-            if(safeIncompleteRec()){
-                recorder?.let { FileOperations.writeGestureFile(it) }
-            }
-            lostConnection = false
-        }else{
-            recorder?.let { FileOperations.writeGestureFile(it) }
-        }
+        recorder?.let { FileOperations.writeGestureFile(it) }
         recorder = null
     }
 
@@ -477,8 +481,9 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         }
     }
 
-    private fun safeIncompleteRec():Boolean{
+    private fun safeIncompleteRec(){
 
+        lostConnection = false
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Warning!")
         builder.setMessage("It seems that one or more sensors where disconnected while recording the data. Do you want to safe the recording anyways?")
@@ -488,20 +493,17 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         builder.setPositiveButton(
             "Safe"
         ) { dialog, which ->
-            //safeRec=true
+            endRecording()
         }
         // Set up Delete button
         builder.setNegativeButton(
             "Delete"
         ) { dialog, which ->
-            //setSafeRec(false)
+            //do nothing
         }
 
         builder.show()
 
-
-
-        return false
     }
 
 }
