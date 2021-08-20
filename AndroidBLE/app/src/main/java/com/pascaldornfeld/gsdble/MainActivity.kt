@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothManager
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -26,6 +25,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager.getDefaultSharedPreferences
+import com.pascaldornfeld.gsdble.audio.AudioPlayer
 import com.pascaldornfeld.gsdble.connected.DeviceViewModel
 import com.pascaldornfeld.gsdble.connected.hardware_library.DeviceManager
 import com.pascaldornfeld.gsdble.connected.hardware_library.models.ImuConfig
@@ -38,7 +38,6 @@ import kotlinx.android.synthetic.main.main_activity.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.properties.Delegates
 
 
 class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity,
@@ -62,6 +61,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private var markedTimeStamps: ArrayList<Long> = ArrayList()
     private var connectedSensors : Int = 0
     private var lostConnection : Boolean = false
+
+    private lateinit var audio : AudioPlayer
 
     //Preferences
     private lateinit var sharedPrefs : SharedPreferences
@@ -134,6 +135,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                                     countDownText.text = getString(R.string.startCountdownPrefix) +
                                             ((millisUntilFinished / 1000) + 1) +
                                             getString(R.string.secondPostfix)
+                                    audio.speak(((millisUntilFinished / 1000) + 1).toString())
                                 }
 
                                 override fun onFinish() {
@@ -157,6 +159,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             }
         }
 
+        audio = AudioPlayer(this)
+
     }
 
     private fun startRecording() {
@@ -170,6 +174,12 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                     countDownText.text = getString(R.string.stopCountdownPrefix) +
                             ((millisUntilFinished / 1000) + 1) +
                             getString(R.string.secondPostfix)
+
+                    if (((millisUntilFinished / 1000) + 1)<=3){
+                        audio.speak(((millisUntilFinished / 1000) + 1).toString())
+                    }
+
+
                 }
 
                 override fun onFinish() {
@@ -181,6 +191,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             }
             stopCountDown?.start()
         }
+        audio.speak("Recording started")
         vibrator.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE))
 
         // start the recording
@@ -215,6 +226,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         }
 
         if(recorder != null) { // make sure there is a recording running
+            audio.speak("Recording stopped")
+
             recorder!!.endTime = SimpleDateFormat("yyyy-MM-dd--HH-mm-ss", Locale.US)
                 .format(Date(System.currentTimeMillis()))
 
