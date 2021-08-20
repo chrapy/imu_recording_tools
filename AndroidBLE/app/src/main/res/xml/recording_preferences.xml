@@ -13,6 +13,7 @@
         <EditTextPreference
             app:dependency="FixRecLen"
             app:key="SetFixRecLen"
+            android:defaultValue="5"
             app:title="@string/fixRecLen_summary_title"
             app:useSimpleSummaryProvider="true"
             />
@@ -37,6 +38,17 @@
 
     </PreferenceCategory>
 
+
+    <PreferenceCategory app:title="Automatically start next recording">
+    <SwitchPreferenceCompat
+        app:key="startNextAuto"
+        app:dependency="FixRecLen"
+        app:title="Start Next recording automatically"
+        android:defaultValue="false"
+        app:summaryOn="Next recording starts automatically"
+        app:summaryOff=""/>
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="Label Recording">
         <SwitchPreferenceCompat
             app:key="labelRecording"
@@ -54,6 +66,15 @@
             app:summaryOff=""/>
 
 
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Audio">
+        <SwitchPreferenceCompat
+            app:key="audioOutput"
+            app:title="Audio Output"
+            android:defaultValue="true"
+            app:summaryOn="Audio On"
+            app:summaryOff="Audio Off"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

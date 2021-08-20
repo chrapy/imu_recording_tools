@@ -63,6 +63,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private var lostConnection : Boolean = false
 
     private lateinit var audio : AudioPlayer
+    private var stopRecording : Boolean = false
 
     //Preferences
     private lateinit var sharedPrefs : SharedPreferences
@@ -135,7 +136,9 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                                     countDownText.text = getString(R.string.startCountdownPrefix) +
                                             ((millisUntilFinished / 1000) + 1) +
                                             getString(R.string.secondPostfix)
-                                    audio.speak(((millisUntilFinished / 1000) + 1).toString())
+                                    if (sharedPrefs.getBoolean("audioOutput", false)) {
+                                        audio.speak(((millisUntilFinished / 1000) + 1).toString())
+                                    }
                                 }
 
                                 override fun onFinish() {
@@ -147,13 +150,15 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                         } else {
                             startRecording()
                         }
-                        isRecording = true
-                        vRecordButton.text = getString(R.string.stop)
+                        stopRecording = false
+
+                        //vRecordButton.text = getString(R.string.stop)
                     }
                 }else { // currently recording
                     if(supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().size!=connectedSensors){
                         lostConnection = true
                     }
+                    stopRecording = true
                     stopRecording()
                 }
             }
@@ -168,16 +173,20 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         connectedSensors = supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().size
 
 
+
+
         if(sharedPrefs.getBoolean("FixRecLen", false)) {
             stopCountDown = object : CountDownTimer(recordingAutostopDelay, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
                     countDownText.text = getString(R.string.stopCountdownPrefix) +
                             ((millisUntilFinished / 1000) + 1) +
                             getString(R.string.secondPostfix)
-
-                    if (((millisUntilFinished / 1000) + 1)<=3){
-                        audio.speak(((millisUntilFinished / 1000) + 1).toString())
+                    if (sharedPrefs.getBoolean("audioOutput", false)) {
+                        if (((millisUntilFinished / 1000) + 1)<=3){
+                            audio.speak(((millisUntilFinished / 1000) + 1).toString())
+                        }
                     }
+
 
 
                 }
@@ -185,16 +194,22 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 override fun onFinish() {
                     if(supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().size!=connectedSensors){
                         lostConnection = true
+
                     }
                     stopRecording()
                 }
             }
             stopCountDown?.start()
         }
-        audio.speak("Recording started")
+        if (sharedPrefs.getBoolean("audioOutput", false)) {
+            audio.speak("Recording started")
+        }
         vibrator.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE))
 
+
         // start the recording
+        vRecordButton.text = getString(R.string.stop)
+        isRecording = true
         val extremityDataArray = ArrayList<ExtremityData>()
         supportFragmentManager.fragments
             .filterIsInstance<DeviceFragment>()
@@ -226,7 +241,9 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         }
 
         if(recorder != null) { // make sure there is a recording running
-            audio.speak("Recording stopped")
+            if (sharedPrefs.getBoolean("audioOutput", false)) {
+                audio.speak("Recording stopped")
+            }
 
             recorder!!.endTime = SimpleDateFormat("yyyy-MM-dd--HH-mm-ss", Locale.US)
                 .format(Date(System.currentTimeMillis()))
@@ -240,10 +257,22 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
             recorder!!.markedTimeStamps = markedTimeStamps
 
-
+            countDownText.text = ""
+            vRecordButton.text = getString(R.string.start)
+            isRecording = false
+            
             // show dialog to add textual note to recording if desired
             if(sharedPrefs.getBoolean("addNotes", false)){
-                showNoteDialog()
+                if(!sharedPrefs.getBoolean("startNextAuto", false)){
+                    showNoteDialog()
+                } else {
+                    Toast.makeText(this, "you can't add notes to automated recording streaks", Toast.LENGTH_SHORT).show()
+                    if (lostConnection) {
+                        safeIncompleteRec()
+                    }else {
+                        endRecording()
+                    }
+                }
             } else {
                 if (lostConnection) {
                     safeIncompleteRec()
@@ -254,9 +283,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
         }
 
-        countDownText.text = ""
-        vRecordButton.text = getString(R.string.start)
-        isRecording = false
+
     }
 
     /**
@@ -446,6 +473,9 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         // write recorder object into file
         recorder?.let { FileOperations.writeGestureFile(it) }
         recorder = null
+        if(sharedPrefs.getBoolean("startNextAuto", false) && !stopRecording){
+            startRecording()
+        }
     }
 
     /**
