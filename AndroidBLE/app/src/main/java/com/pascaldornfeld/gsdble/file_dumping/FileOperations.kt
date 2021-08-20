@@ -9,6 +9,7 @@ import java.io.FileWriter
 
 object FileOperations {
     private val gson = GsonBuilder().setPrettyPrinting().create()
+    var lastFile : File? = null
 
     /**
      * Write raw and meta data of a gesture to a JSON file
@@ -31,6 +32,7 @@ object FileOperations {
                 }
                 file
             }.let { file: File ->
+                lastFile = file
                 // write file
                 FileWriter(file, false).use { fileWriter: FileWriter ->
                     BufferedWriter(fileWriter).use { bufferedWriter: BufferedWriter ->
@@ -39,6 +41,7 @@ object FileOperations {
                     }
                 }
             }
+
         }
     }
 
@@ -64,4 +67,6 @@ object FileOperations {
 
     private fun getGesturesFolderPath(): String =
         "${Environment.getExternalStorageDirectory().absolutePath}${File.separator}GSD_Recordings${File.separator}"
+
+
 }

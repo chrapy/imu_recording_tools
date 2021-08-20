@@ -10,10 +10,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.LocationManager
-import android.os.Bundle
-import android.os.CountDownTimer
-import android.os.VibrationEffect
-import android.os.Vibrator
+import android.os.*
 import android.provider.Settings
 import android.text.InputType
 import android.util.Log
@@ -52,6 +49,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private var isRecording = false
     private var renewRecording = false
     private var abortRenewRec = false
+    private var deletedLastRec = false
 
     private var recordingStartDelay = 3000L // delay to start recording after button press (in ms)
     private var recordingAutostopDelay = 10000L // delay after which a recording is automatically stopped (in ms)
@@ -197,7 +195,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private fun startRecording() {
 
         connectedSensors = supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().size
-
+        deletedLastRec = false
 
         if(sharedPrefs.getBoolean("FixRecLen", false)) {
             stopCountDown = object : CountDownTimer(recordingAutostopDelay, 1000) {
@@ -320,7 +318,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         } else false
 
     /**
-     * handle click on the scan- and settings-button
+     * handle click on the scan-, settings- and delete-button
      */
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         return if (item != null && item.itemId == R.id.search) {
@@ -329,6 +327,11 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         } else return if (item != null && item.itemId == R.id.menu_settings) {
             val intent = Intent(this, SettingsActivity::class.java)
             startActivity(intent)
+            true
+        }else return if (item != null && item.itemId == R.id.deleteLastRec) {
+            if (!isRecording) {
+                deleteLastRecording()
+            }
             true
         } else super.onOptionsItemSelected(item)
     }
@@ -624,4 +627,29 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
     }
 
+    fun deleteLastRecording(){
+        if(!deletedLastRec) {
+            if (FileOperations.lastFile != null) {
+                FileOperations.lastFile!!.delete()
+                Toast.makeText(
+                    this,
+                    "Deleted last recording",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }else{
+                Toast.makeText(
+                    this,
+                    "This folder doesn't contain a file",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            deletedLastRec = true
+        } else {
+            Toast.makeText(
+                this,
+                "The last recording was already deleted",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
 }

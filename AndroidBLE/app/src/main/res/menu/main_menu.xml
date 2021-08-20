@@ -9,6 +9,10 @@
     <item
         android:id="@+id/menu_settings"
         android:icon="@android:drawable/ic_menu_preferences"
+        android:title="se"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/deleteLastRec"
+        android:title="Delete last recording" />
 
 </menu>
