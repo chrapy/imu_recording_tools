@@ -47,6 +47,14 @@
         android:defaultValue="false"
         app:summaryOn="Next recording starts automatically"
         app:summaryOff=""/>
+    <EditTextPreference
+        app:dependency="startNextAuto"
+        app:key="startAutoPause"
+        android:defaultValue="0"
+        app:title="Time between recordings (seconds)"
+        app:useSimpleSummaryProvider="true"
+        />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="Label Recording">

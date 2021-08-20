@@ -50,9 +50,12 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private lateinit var recLabel:String
     private lateinit var labelTextView : TextView
     private var isRecording = false
+    private var renewRecording = false
+    private var abortRenewRec = false
 
     private var recordingStartDelay = 3000L // delay to start recording after button press (in ms)
     private var recordingAutostopDelay = 10000L // delay after which a recording is automatically stopped (in ms)
+    private var autoStartDelay = 0L // delay between automated recordings (in ms)
     private lateinit var startCountDown : CountDownTimer
     private var stopCountDown : CountDownTimer? = null
     private lateinit var countDownText : TextView
@@ -100,66 +103,89 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         // recording functionality
         vRecordButton.setOnClickListener {
             synchronized(vRecordButton) {
-                if (!isRecording) { // currently not recording
-                    if(supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().isEmpty()){
-                        Toast.makeText(this, "no recordable devices connected", Toast.LENGTH_LONG).show()
-                    }else {
-                        //get the delays from preferences
-                        try {
-                            recordingStartDelay = sharedPrefs!!.getString("SetPreRecTimer", "-1")
-                                .toLong() * 1000L
-                        } catch (ex: NumberFormatException) {
+                if (renewRecording) {
+                    if (sharedPrefs.getBoolean("PreRecTimer", false)) {
+                        startCountDown.cancel()
+                    }
+                    if(sharedPrefs.getBoolean("FixRecLen", false)){
+                        stopCountDown?.cancel()
+                    }
+                    countDownText.text = ""
+                    vRecordButton.text = getString(R.string.start)
+                    isRecording = false
+                    abortRenewRec = true
+                    audio.speak("Stopped Recording Streak")
+                } else {
+                    if (!isRecording) { // currently not recording
+                        if (supportFragmentManager.fragments.filterIsInstance<DeviceFragment>()
+                                .isEmpty()
+                        ) {
                             Toast.makeText(
                                 this,
-                                "Timer value must be a number & is set to 0!",
+                                "no recordable devices connected",
                                 Toast.LENGTH_LONG
                             ).show()
-                            sharedPrefs.edit().putString("SetPreRecTimer", "0").apply()
-                        }
-                        try {
-                            recordingAutostopDelay =
-                                sharedPrefs!!.getString("SetFixRecLen", "-1").toLong() * 1000L
-                        } catch (ex: NumberFormatException) {
-                            Toast.makeText(
-                                this,
-                                "Timer value must be a number & is set to 0!",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            sharedPrefs.edit().putString("SetFixRecLen", "0").apply()
-                        }
-
-
-                        // start recording after delay if desired
-                        if (sharedPrefs.getBoolean("PreRecTimer", false)) {
-                            startCountDown = object : CountDownTimer(recordingStartDelay, 1000) {
-                                override fun onTick(millisUntilFinished: Long) {
-                                    countDownText.text = getString(R.string.startCountdownPrefix) +
-                                            ((millisUntilFinished / 1000) + 1) +
-                                            getString(R.string.secondPostfix)
-                                    if (sharedPrefs.getBoolean("audioOutput", false)) {
-                                        audio.speak(((millisUntilFinished / 1000) + 1).toString())
-                                    }
-                                }
-
-                                override fun onFinish() {
-                                    countDownText.text = ""
-                                    startRecording()
-                                }
-                            }
-                            startCountDown.start()
                         } else {
-                            startRecording()
-                        }
-                        stopRecording = false
+                            //get the delays from preferences
+                            try {
+                                recordingStartDelay =
+                                    sharedPrefs!!.getString("SetPreRecTimer", "-1")
+                                        .toLong() * 1000L
+                            } catch (ex: NumberFormatException) {
+                                Toast.makeText(
+                                    this,
+                                    "Timer value must be a number & is set to 0!",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                sharedPrefs.edit().putString("SetPreRecTimer", "0").apply()
+                            }
+                            try {
+                                recordingAutostopDelay =
+                                    sharedPrefs!!.getString("SetFixRecLen", "-1").toLong() * 1000L
+                            } catch (ex: NumberFormatException) {
+                                Toast.makeText(
+                                    this,
+                                    "Timer value must be a number & is set to 0!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                sharedPrefs.edit().putString("SetFixRecLen", "0").apply()
+                            }
 
-                        //vRecordButton.text = getString(R.string.stop)
+
+                            // start recording after delay if desired
+                            if (sharedPrefs.getBoolean("PreRecTimer", false)) {
+                                startCountDown =
+                                    object : CountDownTimer(recordingStartDelay, 1000) {
+                                        override fun onTick(millisUntilFinished: Long) {
+                                            countDownText.text =
+                                                getString(R.string.startCountdownPrefix) +
+                                                        ((millisUntilFinished / 1000) + 1) +
+                                                        getString(R.string.secondPostfix)
+                                            if (sharedPrefs.getBoolean("audioOutput", false)) {
+                                                audio.speak(((millisUntilFinished / 1000) + 1).toString())
+                                            }
+                                        }
+
+                                        override fun onFinish() {
+                                            countDownText.text = ""
+                                            startRecording()
+                                        }
+                                    }
+                                startCountDown.start()
+                            } else {
+                                startRecording()
+                            }
+                            stopRecording = false
+
+                            //vRecordButton.text = getString(R.string.stop)
+                        }
+                    } else { // currently recording
+                        if (supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().size != connectedSensors) {
+                            lostConnection = true
+                        }
+                        stopRecording = true
+                        stopRecording()
                     }
-                }else { // currently recording
-                    if(supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().size!=connectedSensors){
-                        lostConnection = true
-                    }
-                    stopRecording = true
-                    stopRecording()
                 }
             }
         }
@@ -171,8 +197,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private fun startRecording() {
 
         connectedSensors = supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().size
-
-
 
 
         if(sharedPrefs.getBoolean("FixRecLen", false)) {
@@ -260,7 +284,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             countDownText.text = ""
             vRecordButton.text = getString(R.string.start)
             isRecording = false
-            
+
             // show dialog to add textual note to recording if desired
             if(sharedPrefs.getBoolean("addNotes", false)){
                 if(!sharedPrefs.getBoolean("startNextAuto", false)){
@@ -474,7 +498,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         recorder?.let { FileOperations.writeGestureFile(it) }
         recorder = null
         if(sharedPrefs.getBoolean("startNextAuto", false) && !stopRecording){
-            startRecording()
+            renewRecording()
         }
     }
 
@@ -546,6 +570,57 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         }
 
         builder.show()
+
+    }
+
+    private fun renewRecording(){
+        vRecordButton.text = getString(R.string.stop)
+        renewRecording = true
+        abortRenewRec = false
+
+        var textDone = false
+        //get the delays from the preferences
+        try {
+            autoStartDelay = sharedPrefs!!.getString("startAutoPause", "-1")
+                .toLong() * 1000L
+        } catch (ex: NumberFormatException) {
+            Toast.makeText(
+                this,
+                "Timer value must be a number & is set to 0!",
+                Toast.LENGTH_LONG
+            ).show()
+            sharedPrefs.edit().putString("startAutoPause", "0").apply()
+            autoStartDelay = 0
+        }
+
+        // start recording after delay if desired
+
+        startCountDown = object : CountDownTimer(autoStartDelay, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                if(!abortRenewRec) {
+                    countDownText.text = getString(R.string.startCountdownPrefix) +
+                            ((millisUntilFinished / 1000) + 1) +
+                            getString(R.string.secondPostfix)
+                    if (sharedPrefs.getBoolean("audioOutput", false)) {
+                        if (!textDone) {
+                            audio.speak("New recording in")
+                            textDone = true
+                        } else {
+                            audio.speak(((millisUntilFinished / 1000) + 1).toString())
+                        }
+                    }
+                }
+            }
+
+            override fun onFinish() {
+                countDownText.text = ""
+                renewRecording = false
+                if(!abortRenewRec) {
+                    startRecording()
+                }
+            }
+        }
+        startCountDown.start()
 
     }
 
