@@ -60,4 +60,6 @@
     <string name="startRecTimer_summary_on">The recording starts after a fixed amount of time </string>
     <string name="startRecTimer_summary_off">The recording starts when pressing the start record button</string>
     <string name="startRecTimer_summary_title">pre-record timer duration (seconds):</string>
+
+    <string name="enablePrePro_title">Enable Preprocessing</string>
 </resources>

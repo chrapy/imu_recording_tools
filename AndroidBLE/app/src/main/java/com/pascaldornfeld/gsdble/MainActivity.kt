@@ -536,7 +536,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         builder.show()
     }
 
-    fun markTimeStamp(v: View){
+    fun markTimeStamp(){
         if(isRecording){
             Toast.makeText(this, "marked timestamp!", Toast.LENGTH_SHORT).show()
             try {

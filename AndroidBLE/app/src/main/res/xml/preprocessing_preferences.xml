@@ -1,5 +1,10 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
-
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <SwitchPreferenceCompat
+        app:key="enablePreprocessing"
+        app:title="@string/enablePrePro_title"
+        app:summaryOff=""
+        app:summaryOn="The recorded data will be directly preprocessed and saved"/>
 
 
 </PreferenceScreen>
