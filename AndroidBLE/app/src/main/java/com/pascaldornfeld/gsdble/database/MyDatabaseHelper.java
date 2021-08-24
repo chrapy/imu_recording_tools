@@ -85,10 +85,22 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         cursor.moveToFirst();
         name = cursor.getString(0);
 
-        Log.e("Name: ", name);
         cursor.close();
-        //Toast.makeText(context, name, Toast.LENGTH_SHORT).show();
 
         return name;
     }
+
+    public Cursor readAllData(){
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = null;
+
+        if (db != null){
+            cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
+        }
+
+        return cursor;
+    }
+
+
 }
