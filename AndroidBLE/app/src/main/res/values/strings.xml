@@ -46,6 +46,7 @@
     <!-- Preference Titles -->
     <string name="recording_header">Recording</string>
     <string name="preprocessing_header">Preprocessing</string>
+    <string name="devices_header">Device Manager</string>
 
 
     <string name="title_activity_settings">Settings</string>

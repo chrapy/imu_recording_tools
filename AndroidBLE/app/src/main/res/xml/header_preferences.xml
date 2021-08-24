@@ -1,4 +1,5 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <Preference
         app:fragment="com.pascaldornfeld.gsdble.SettingsActivity$RecordingFragment"
@@ -11,5 +12,13 @@
         app:icon="@drawable/preprocess"
         app:key="preprocessing_header"
         app:title="@string/preprocessing_header" />
+
+    <Preference
+        app:key="devices_header"
+        app:title="@string/devices_header"
+        app:icon="@android:drawable/ic_menu_search">
+        <intent android:action="com.pascaldornfeld.gsdble.DeviceManager"/>
+    </Preference>
+
 
 </PreferenceScreen>

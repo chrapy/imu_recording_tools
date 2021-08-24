@@ -27,10 +27,12 @@ import com.pascaldornfeld.gsdble.connected.DeviceViewModel
 import com.pascaldornfeld.gsdble.connected.hardware_library.DeviceManager
 import com.pascaldornfeld.gsdble.connected.hardware_library.models.ImuConfig
 import com.pascaldornfeld.gsdble.connected.view.DeviceFragment
+import com.pascaldornfeld.gsdble.database.MyDatabaseHelper
 import com.pascaldornfeld.gsdble.file_dumping.ExtremityData
 import com.pascaldornfeld.gsdble.file_dumping.FileOperations
 import com.pascaldornfeld.gsdble.file_dumping.GestureData
 import com.pascaldornfeld.gsdble.scan.ScanDialogFragment
+import kotlinx.android.synthetic.main.connect_viewholder.*
 import kotlinx.android.synthetic.main.main_activity.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -309,7 +311,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     }
 
     /**
-     * add scan- and settings-button
+     * add scan-, settings- and delete-button
      */
     override fun onCreateOptionsMenu(menu: Menu?): Boolean =
         if (bleReady) {
@@ -357,6 +359,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 .beginTransaction()
                 .add(vFragmentContainer.id, DeviceFragment.newInstance(device))
                 .commit()
+        //is device already known?
+            checkSensorKnown(device)
         } catch (e: Exception) {
             Log.w(TAG, "Could not add Device Fragment")
             e.printStackTrace()
@@ -551,6 +555,9 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         }
     }
 
+    /**
+     * If sensors disconnect during the recording, the user is warned afterwards and asked if he wants to keep or delete the recording
+     */
     private fun safeIncompleteRec(){
 
         lostConnection = false
@@ -576,6 +583,9 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
     }
 
+    /**
+     * With the renewRecording Options selected (in the settings menu) the recording will be renewed until stopped by the user
+     */
     private fun renewRecording(){
         vRecordButton.text = getString(R.string.stop)
         renewRecording = true
@@ -627,6 +637,10 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
     }
 
+    /**
+     * Option to delete the last recording in App
+     */
+
     fun deleteLastRecording(){
         if(!deletedLastRec) {
             if (FileOperations.lastFile != null) {
@@ -651,5 +665,31 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 Toast.LENGTH_SHORT
             ).show()
         }
+    }
+
+    /**
+     * Checks if the Sensor Device is already known, if not it will be added.
+     * The time drift of the sensor will be determined and a name/could be attached to the specific sensor
+     */
+    private fun checkSensorKnown(device: BluetoothDevice){
+
+
+        var myDB = MyDatabaseHelper(this)
+
+
+
+        var deviceMac = device.address
+
+
+        if (!myDB.checkDevice(deviceMac)){
+            //TODO Popups zum ermitteln von name und drift (evtl extra Methoden)
+
+
+            myDB.addDevice(deviceMac, "ermitteln", "ermitteln")
+
+        } else {
+            //Toast.makeText(this, "kenne ich!", Toast.LENGTH_LONG).show()
+        }
+
     }
 }
