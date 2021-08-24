@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -69,6 +70,25 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             exists = true;
         }
 
+        cursor.close();
+
         return exists;
+    }
+
+    public String getDeviceName(String deviceMac){
+        SQLiteDatabase db = this.getReadableDatabase();
+        String[] selectionArgs = {deviceMac};
+        String name = deviceMac;
+
+        Cursor cursor = db.rawQuery("SELECT "+ COLUMN_NAME + " FROM "+ TABLE_NAME + " WHERE " + COLUMN_MAC + "=?", selectionArgs);
+
+        cursor.moveToFirst();
+        name = cursor.getString(0);
+
+        Log.e("Name: ", name);
+        cursor.close();
+        //Toast.makeText(context, name, Toast.LENGTH_SHORT).show();
+
+        return name;
     }
 }

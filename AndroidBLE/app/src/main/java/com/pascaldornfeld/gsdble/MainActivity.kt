@@ -32,7 +32,6 @@ import com.pascaldornfeld.gsdble.file_dumping.ExtremityData
 import com.pascaldornfeld.gsdble.file_dumping.FileOperations
 import com.pascaldornfeld.gsdble.file_dumping.GestureData
 import com.pascaldornfeld.gsdble.scan.ScanDialogFragment
-import kotlinx.android.synthetic.main.connect_viewholder.*
 import kotlinx.android.synthetic.main.main_activity.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -91,7 +90,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         connectDialog = ScanDialogFragment().apply {
             initialize(
                 { bluetoothAdapter!!.bluetoothLeScanner },
-                { addDeviceFragment(it) },
+                { checkSensorKnown(it) },
                 {
                     supportFragmentManager.fragments
                         .filterIsInstance<DeviceFragment>()
@@ -359,8 +358,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 .beginTransaction()
                 .add(vFragmentContainer.id, DeviceFragment.newInstance(device))
                 .commit()
-        //is device already known?
-            checkSensorKnown(device)
+
         } catch (e: Exception) {
             Log.w(TAG, "Could not add Device Fragment")
             e.printStackTrace()
@@ -540,7 +538,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         builder.show()
     }
 
-    fun markTimeStamp(){
+    fun markTimeStamp(v:View){
         if(isRecording){
             Toast.makeText(this, "marked timestamp!", Toast.LENGTH_SHORT).show()
             try {
@@ -673,23 +671,68 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
      */
     private fun checkSensorKnown(device: BluetoothDevice){
 
-
         var myDB = MyDatabaseHelper(this)
-
-
-
         var deviceMac = device.address
+        var deviceName = deviceMac
 
 
         if (!myDB.checkDevice(deviceMac)){
-            //TODO Popups zum ermitteln von name und drift (evtl extra Methoden)
+
+            //Possibility to attach a label to the Sensor
+
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("New Sensor")
+            builder.setMessage("Do you want to label the Sensor")
+            // Set up Safe button
+            builder.setPositiveButton(
+                "Label"
+            ) { _, _ ->
+                nameDevice(myDB, device)
+            }
+            // Set up Skip button
+            builder.setNegativeButton(
+                "Skip"
+            ) { _, _ ->
+                myDB.addDevice(deviceMac, deviceName, "ermitteln")
+                addDeviceFragment(device)
+            }
+            builder.show()
+
+            //TODO Popups zum ermitteln von drift (evtl extra Methoden)
 
 
-            myDB.addDevice(deviceMac, "ermitteln", "ermitteln")
+
+
 
         } else {
-            //Toast.makeText(this, "kenne ich!", Toast.LENGTH_LONG).show()
+            addDeviceFragment(device)
         }
+
+    }
+
+    private fun nameDevice(myDB: MyDatabaseHelper, device: BluetoothDevice){
+        var deviceName = ""
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Name the device")
+
+        // Set up the input
+        val input = EditText(this)
+        input.inputType = InputType.TYPE_CLASS_TEXT
+        builder.setView(input)
+
+        // Set up OK button
+        builder.setPositiveButton(
+            getString(R.string.ok)
+        ) { dialog, which ->
+            deviceName = input.text.toString()
+            myDB.addDevice(device.address, deviceName, "ermitteln")
+            addDeviceFragment(device)
+        }
+
+        builder.show()
+    }
+
+    private fun labelDevice(){
 
     }
 }

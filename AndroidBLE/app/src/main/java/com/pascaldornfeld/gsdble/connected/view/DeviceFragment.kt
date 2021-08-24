@@ -18,6 +18,7 @@ import com.pascaldornfeld.gsdble.connected.DeviceViewModel
 import com.pascaldornfeld.gsdble.connected.hardware_library.WriteToDeviceIfc
 import com.pascaldornfeld.gsdble.connected.hardware_library.models.ImuConfig
 import com.pascaldornfeld.gsdble.connected.view.subfragments.*
+import com.pascaldornfeld.gsdble.database.MyDatabaseHelper
 import kotlinx.android.synthetic.main.device_fragment.*
 import kotlinx.android.synthetic.main.device_fragment.view.*
 import kotlinx.android.synthetic.main.fragment_config.*
@@ -65,16 +66,11 @@ class DeviceFragment : Fragment() {
     }
 
     fun getDeviceName(macAdress: String): String {
-        var deviceName: String
-        when (macAdress) {
-            "D4:FC:C7:02:12:59" -> deviceName = "Right Hand"
-            "C0:B0:DB:50:EB:35" -> deviceName = "Left Hand"
-            "E3:77:25:6A:E3:C5" -> deviceName = "Right Foot"
-            "D4:84:47:31:60:DA" -> deviceName = "Left Foot"
-            else -> deviceName = macAdress
-        }
-        return deviceName
+        var myDB = MyDatabaseHelper(context)
+
+        return myDB.getDeviceName(macAdress)
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
