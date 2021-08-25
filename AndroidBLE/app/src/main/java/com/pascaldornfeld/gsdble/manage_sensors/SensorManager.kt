@@ -1,9 +1,11 @@
 package com.pascaldornfeld.gsdble.manage_sensors
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.annotation.Nullable
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -39,7 +41,7 @@ class SensorManager : AppCompatActivity() {
 
         storeData()
 
-        smAdapter = SensorManagerAdapter(this, deviceMac, deviceName)
+        smAdapter = SensorManagerAdapter(this, this, deviceMac, deviceName, deviceDrift)
         recyclerView.adapter = smAdapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -50,6 +52,13 @@ class SensorManager : AppCompatActivity() {
             onBackPressed()
             true
         } else super.onOptionsItemSelected(item)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode==1){
+            recreate();
+        }
     }
 
     /**

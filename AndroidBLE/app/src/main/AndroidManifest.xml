@@ -21,15 +21,18 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".manage_sensors.SensorManager"
+        <activity android:name=".manage_sensors.UpdateSensorManager"></activity>
+        <activity
+            android:name=".manage_sensors.SensorManager"
             android:label="@string/devices_header"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize|adjustPan"
             tools:ignore="LockedOrientationActivity">
-                <intent-filter>
-                    <action android:name="com.pascaldornfeld.gsdble.DeviceManager"/>
-                    <category android:name="android.intent.category.DEFAULT"/>
-                </intent-filter>
+            <intent-filter>
+                <action android:name="com.pascaldornfeld.gsdble.DeviceManager" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".SettingsActivity"

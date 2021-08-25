@@ -102,5 +102,18 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         return cursor;
     }
 
+    public void updateDeviceName(String deviceMac, String deviceName){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_NAME, deviceName);
+
+        long result = db.update(TABLE_NAME, cv, "deviceMac=?", new String[]{deviceMac});
+
+        if (result == -1){
+            Toast.makeText(context, "Update failed", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(context, "Update succesfull", Toast.LENGTH_SHORT).show();
+        }
+    }
 
 }

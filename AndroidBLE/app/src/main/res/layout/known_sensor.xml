@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:id="@+id/knownSensorLayout">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -15,46 +16,41 @@
             android:padding="12dp">
 
             <TextView
-                android:id="@+id/deviceMac_text"
+                android:id="@+id/deviceMac_textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="AA:BB:CC:DD:EE:FF"
-                app:layout_constraintBottom_toTopOf="@+id/deviceName_text"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintBottom_toBottomOf="@+id/macTV"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/macTV" />
 
             <TextView
                 android:id="@+id/deviceName_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Device Name"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="@+id/deviceMac_text"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintBottom_toBottomOf="@+id/deviceNameTV"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/deviceNameTV" />
 
-            <Button
-                android:id="@+id/editDeviceName"
+            <TextView
+                android:id="@+id/macTV"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="80dp"
-                android:text="Edit"
-                android:textSize="15sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/deviceMac_text"
+                android:text="MAC:"
+                app:layout_constraintBottom_toTopOf="@+id/deviceNameTV"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <Button
-                android:id="@+id/deleteDevice"
+            <TextView
+                android:id="@+id/deviceNameTV"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="deleteSensor"
-                android:text="delete"
-                android:textSize="15sp"
+                android:text="Device Name:"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.871"
-                app:layout_constraintStart_toEndOf="@+id/editDeviceName"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

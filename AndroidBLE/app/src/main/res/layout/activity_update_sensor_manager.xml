@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+tools:context=".manage_sensors.UpdateSensorManager"
+android:padding="30dp">
+
+    <EditText
+        android:id="@+id/deviceName_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="44dp"
+        android:ems="10"
+        android:hint="device name"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.491"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/deviceMac_textView" />
+
+
+
+<Button
+    android:id="@+id/update_button"
+    android:layout_width="match_parent"
+    android:layout_height="70dp"
+    android:layout_marginTop="40dp"
+    android:text="Update"
+    android:textSize="20sp"
+    android:textAllCaps="false"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/deviceName_input" />
+
+<Button
+    android:id="@+id/delete_button"
+    android:layout_width="match_parent"
+    android:layout_height="70dp"
+    android:layout_marginTop="16dp"
+    android:text="Delete"
+    android:textAllCaps="false"
+    android:textSize="20sp"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/update_button" />
+
+    <TextView
+        android:id="@+id/deviceMac_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="AA:BB:CC:DD:EE:FF"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/macTV2" />
+
+    <TextView
+        android:id="@+id/macTV2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="128dp"
+        android:text="MAC:"
+        app:layout_constraintEnd_toEndOf="@+id/deviceMac_textView"
+        app:layout_constraintHorizontal_bias="0.48"
+        app:layout_constraintStart_toStartOf="@+id/deviceMac_textView"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/deviceNameTV2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="device name:"
+        app:layout_constraintBottom_toTopOf="@+id/deviceName_input"
+        app:layout_constraintEnd_toEndOf="@+id/deviceName_input"
+        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintStart_toStartOf="@+id/deviceName_input"
+        app:layout_constraintTop_toBottomOf="@+id/deviceMac_textView"
+        app:layout_constraintVertical_bias="0.692" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
