@@ -116,4 +116,15 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    public void deleteDevice(String deviceMac){
+        SQLiteDatabase db = this.getWritableDatabase();
+        long result = db.delete(TABLE_NAME, "deviceMac=?", new String[]{deviceMac});
+
+        if (result == -1){
+            Toast.makeText(context, "Deleting failed", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(context, "Deleted succesfully", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }

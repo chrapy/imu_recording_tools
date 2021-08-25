@@ -209,9 +209,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                             audio.speak(((millisUntilFinished / 1000) + 1).toString())
                         }
                     }
-
-
-
                 }
 
                 override fun onFinish() {
