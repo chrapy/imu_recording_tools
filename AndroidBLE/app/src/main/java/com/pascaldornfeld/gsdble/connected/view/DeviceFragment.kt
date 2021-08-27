@@ -212,4 +212,9 @@ class DeviceFragment : Fragment() {
     fun setWriteToDeviceIfc(writeToDeviceIfc: WriteToDeviceIfc) {
         this.writeToDeviceIfc = writeToDeviceIfc
     }
+
+    fun setDeviceName(){
+        var name = getDeviceName(device().address);
+        view?.vDeviceAddress?.text = name
+    }
 }

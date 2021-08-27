@@ -175,8 +175,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                                 startRecording()
                             }
                             stopRecording = false
-
-                            //vRecordButton.text = getString(R.string.stop)
                         }
                     } else { // currently recording
                         if (supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().size != connectedSensors) {
@@ -188,9 +186,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 }
             }
         }
-
         audio = AudioPlayer(this)
-
     }
 
     private fun startRecording() {
@@ -323,8 +319,10 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             connectDialog.show(supportFragmentManager, null)
             true
         } else return if (item != null && item.itemId == R.id.menu_settings) {
-            val intent = Intent(this, SettingsActivity::class.java)
-            startActivity(intent)
+            if (!isRecording) {
+                val intent = Intent(this, SettingsActivity::class.java)
+                startActivityForResult(intent, 2)
+            }
             true
         }else return if (item != null && item.itemId == R.id.deleteLastRec) {
             if (!isRecording) {
@@ -729,7 +727,17 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         builder.show()
     }
 
-    private fun labelDevice(){
+    /**
+     * refresh device names, when returning from the settings screen
+     */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode==2){
 
+            for (fragment in supportFragmentManager.fragments){
+                if (fragment is DeviceFragment) fragment.setDeviceName()
+            }
+        }
     }
+
 }
