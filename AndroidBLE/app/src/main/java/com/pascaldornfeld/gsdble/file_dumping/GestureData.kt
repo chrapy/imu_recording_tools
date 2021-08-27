@@ -32,6 +32,8 @@ data class GestureData(
 
 data class ExtremityData(
     var deviceMac: String = "none",
+    var deviceName: String = "none",
+    //todo hier noch das selbe mit dem drift
     val accData: SensorData = SensorData(),
     val gyroData: SensorData = SensorData()
     // var timeStampOverflowError: Boolean = false

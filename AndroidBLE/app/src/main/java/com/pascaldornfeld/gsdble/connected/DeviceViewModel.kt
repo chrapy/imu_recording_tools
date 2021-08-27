@@ -1,18 +1,22 @@
 package com.pascaldornfeld.gsdble.connected
 
 import android.app.Application
+import android.content.Context
 import android.bluetooth.BluetoothGatt
 import androidx.lifecycle.*
+import com.pascaldornfeld.gsdble.MainActivity
 import com.pascaldornfeld.gsdble.connected.async_calculations.CharaDataStatsBySecondValue
 import com.pascaldornfeld.gsdble.connected.hardware_library.ReadFromDeviceIfc
 import com.pascaldornfeld.gsdble.connected.hardware_library.models.ImuConfig
 import com.pascaldornfeld.gsdble.connected.hardware_library.models.ImuData
 import com.pascaldornfeld.gsdble.connected.view.DeviceFragment
+import com.pascaldornfeld.gsdble.database.MyDatabaseHelper
 import com.pascaldornfeld.gsdble.file_dumping.ExtremityData
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.coroutineContext
 
-class DeviceViewModel(application: Application, private val deviceName: String) :
+class DeviceViewModel(application: Application, private val deviceMac: String, private val deviceName: String ) : //todo hier noch das selbe mit dem Drift
     AndroidViewModel(application), ReadFromDeviceIfc {
     val dataAccel = SmallDataHolder<Triple<Short, Short, Short>>(2, 1f)
     val dataGyro = SmallDataHolder<Triple<Short, Short, Short>>(2, 1f)
@@ -43,7 +47,9 @@ class DeviceViewModel(application: Application, private val deviceName: String) 
     private var packetsThisSecond = 0L
     var extremityData: ExtremityData? = null
         set(value) {
-            if (value != null) value.deviceMac = deviceName
+            if (value != null) value.deviceMac = deviceMac
+            if (value != null) value.deviceName = deviceName
+            //todo hier noch das selbe mit dem Drift
             field = value
         }
 
@@ -119,7 +125,9 @@ class DeviceViewModel(application: Application, private val deviceName: String) 
                 deviceFragment,
                 DeviceViewModelFactory(
                     deviceFragment.requireActivity().application,
-                    deviceFragment.device().address.toString()
+                    deviceFragment.device().address.toString(),
+                    deviceFragment.getDeviceName(deviceFragment.device().address.toString())
+                    //todo hier noch das selbe mit dem drift
                 )
             ).get(DeviceViewModel::class.java)
     }
@@ -127,10 +135,12 @@ class DeviceViewModel(application: Application, private val deviceName: String) 
 
 class DeviceViewModelFactory(
     private val application: Application,
+    private val deviceMac: String,
     private val deviceName: String
+    //todo hier noch das selbe mit dem Drift
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return DeviceViewModel(application, deviceName) as T
+        return DeviceViewModel(application, deviceMac, deviceName) as T //todo hier noch das selbe mit dem Drift
     }
 }
