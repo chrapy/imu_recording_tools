@@ -98,7 +98,6 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         if (db != null){
             cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
         }
-
         return cursor;
     }
 
@@ -115,6 +114,8 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             Toast.makeText(context, "Update succesfull", Toast.LENGTH_SHORT).show();
         }
     }
+
+
 
     public void deleteDevice(String deviceMac){
         SQLiteDatabase db = this.getWritableDatabase();

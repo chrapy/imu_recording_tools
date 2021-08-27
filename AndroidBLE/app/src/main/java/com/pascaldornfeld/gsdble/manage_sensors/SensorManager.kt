@@ -45,6 +45,7 @@ class SensorManager : AppCompatActivity() {
         recyclerView.adapter = smAdapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
@@ -75,6 +76,11 @@ class SensorManager : AppCompatActivity() {
                 deviceDrift.add(cursor.getString(2))
             }
         }
+        cursor.close()
     }
-    
+
+    override fun onDestroy() {
+        super.onDestroy()
+        myDB.close()
+    }
 }

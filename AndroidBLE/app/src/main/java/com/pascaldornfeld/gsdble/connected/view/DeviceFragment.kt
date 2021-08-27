@@ -67,8 +67,9 @@ class DeviceFragment : Fragment() {
 
     fun getDeviceName(macAdress: String): String {
         var myDB = MyDatabaseHelper(context)
-
-        return myDB.getDeviceName(macAdress)
+        var deviceName = myDB.getDeviceName(macAdress)
+        myDB.close()
+        return deviceName
     }
 
 

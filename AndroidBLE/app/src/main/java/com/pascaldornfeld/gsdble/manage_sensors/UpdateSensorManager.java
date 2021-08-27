@@ -43,6 +43,7 @@ public class UpdateSensorManager extends AppCompatActivity {
                 deviceName = deviceName_input.getText().toString().trim();
                 MyDatabaseHelper myDB = new MyDatabaseHelper(UpdateSensorManager.this);
                 myDB.updateDeviceName(deviceMac, deviceName);
+                myDB.close();
             }
         });
 
@@ -93,6 +94,7 @@ public class UpdateSensorManager extends AppCompatActivity {
             public void onClick(DialogInterface dialogInterface, int i) {
                 MyDatabaseHelper myDB = new MyDatabaseHelper(UpdateSensorManager.this);
                 myDB.deleteDevice(deviceMac);
+                myDB.close();
                 finish();
             }
         });

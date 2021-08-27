@@ -720,8 +720,9 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             getString(R.string.ok)
         ) { dialog, which ->
             deviceName = input.text.toString()
-            myDB.addDevice(device.address, deviceName, "ermitteln")
+            myDB.addDevice(device.address, deviceName, "unknown")
             addDeviceFragment(device)
+            calculateDeviceTimeDrift(device)
         }
 
         builder.show()
@@ -733,11 +734,14 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if(requestCode==2){
-
             for (fragment in supportFragmentManager.fragments){
                 if (fragment is DeviceFragment) fragment.setDeviceName()
             }
         }
+    }
+
+    fun calculateDeviceTimeDrift(device: BluetoothDevice) {
+
     }
 
 }
