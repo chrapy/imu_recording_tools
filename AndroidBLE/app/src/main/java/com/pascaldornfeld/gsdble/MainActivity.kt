@@ -10,13 +10,17 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.LocationManager
-import android.os.*
+import android.os.Bundle
+import android.os.CountDownTimer
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.provider.Settings
 import android.text.InputType
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowManager
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -282,7 +286,11 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 if(!sharedPrefs.getBoolean("startNextAuto", false)){
                     showNoteDialog()
                 } else {
-                    Toast.makeText(this, "you can't add notes to automated recording streaks", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "you can't add notes to automated recording streaks",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     if (lostConnection) {
                         safeIncompleteRec()
                     }else {
@@ -533,7 +541,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         builder.show()
     }
 
-    fun markTimeStamp(v:View){
+    fun markTimeStamp(v: View){
         if(isRecording){
             Toast.makeText(this, "marked timestamp!", Toast.LENGTH_SHORT).show()
             try {
@@ -739,7 +747,21 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     fun calculateDeviceTimeDrift(device: BluetoothDevice) {
         var deviceMac = device.address
 
+        var calculateDriftProgress: ProgressBar = findViewById(R.id.calculateDrift_progress)
+        calculateDriftProgress.visibility = View.VISIBLE
+
+        var calculatingTextView: TextView = findViewById(R.id.calculatingText)
+        calculatingTextView.visibility = View.VISIBLE
+
+        window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+
+
+
     //TODO Popups zum ermitteln von drift (evtl extra Methoden)
+        //calculateDriftProgress.visibility = View.INVISIBLE
+        //calculatingTextView.visibility = View.INVISIBLE
+        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
 
 }
