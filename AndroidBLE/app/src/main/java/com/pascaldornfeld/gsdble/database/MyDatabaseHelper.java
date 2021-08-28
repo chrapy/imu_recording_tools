@@ -128,4 +128,17 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    public void updateDeviceTimeDrift(String deviceMac, String deviceDrift){
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_DRIFT, deviceDrift);
+
+        long result = db.update(TABLE_NAME, cv, "deviceMac=?", new String[]{deviceMac});
+
+        if (result == -1){
+            Toast.makeText(context, "Setting device drift failed", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(context, "Set device drift", Toast.LENGTH_SHORT).show();
+        }
+    }
 }

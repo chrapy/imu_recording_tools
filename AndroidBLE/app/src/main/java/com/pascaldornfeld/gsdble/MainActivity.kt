@@ -688,20 +688,16 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             builder.setNegativeButton(
                 "Skip"
             ) { _, _ ->
-                myDB.addDevice(deviceMac, deviceName, "ermitteln")
+                myDB.addDevice(deviceMac, deviceName, "unknown")
                 addDeviceFragment(device)
+                calculateDeviceTimeDrift(device)
             }
             builder.show()
-
-            //TODO Popups zum ermitteln von drift (evtl extra Methoden)
-
-
-
-
-
         } else {
             addDeviceFragment(device)
         }
+
+        myDB.close()
 
     }
 
@@ -741,7 +737,9 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     }
 
     fun calculateDeviceTimeDrift(device: BluetoothDevice) {
+        var deviceMac = device.address
 
+    //TODO Popups zum ermitteln von drift (evtl extra Methoden)
     }
 
 }
