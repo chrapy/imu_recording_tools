@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.annotation.IdRes
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -69,6 +70,12 @@ class DeviceFragment : Fragment() {
         var myDB = MyDatabaseHelper(context)
         var deviceName = myDB.getDeviceName(macAdress)
         myDB.close()
+
+        if (deviceName == "ERROR.DEVICE.DISCONNECTED!!" ){
+            writeToDeviceIfc?.doDisconnect()
+            Toast.makeText(this.requireContext(), "Device " + macAdress + " was deleted and therefore disconnected!", Toast.LENGTH_LONG).show()
+        }
+
         return deviceName
     }
 

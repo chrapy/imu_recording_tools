@@ -78,12 +78,16 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
     public String getDeviceName(String deviceMac){
         SQLiteDatabase db = this.getReadableDatabase();
         String[] selectionArgs = {deviceMac};
-        String name = deviceMac;
+        String name;
 
         Cursor cursor = db.rawQuery("SELECT "+ COLUMN_NAME + " FROM "+ TABLE_NAME + " WHERE " + COLUMN_MAC + "=?", selectionArgs);
 
-        cursor.moveToFirst();
-        name = cursor.getString(0);
+        if(cursor.getCount() == 0){
+            name = "ERROR.DEVICE.DISCONNECTED!!";
+        }else {
+            cursor.moveToFirst();
+            name = cursor.getString(0);
+        }
 
         cursor.close();
 
