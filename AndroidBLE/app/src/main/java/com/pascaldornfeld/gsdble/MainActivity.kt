@@ -10,10 +10,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.location.LocationManager
-import android.os.Bundle
-import android.os.CountDownTimer
-import android.os.VibrationEffect
-import android.os.Vibrator
+import android.os.*
 import android.provider.Settings
 import android.text.InputType
 import android.util.Log
@@ -71,8 +68,12 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private lateinit var audio : AudioPlayer
     private var stopRecording : Boolean = false
 
+    //private var calculateDrift = false
+
+
     //Preferences
     private lateinit var sharedPrefs : SharedPreferences
+
 
 
 
@@ -214,7 +215,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 override fun onFinish() {
                     if(supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().size!=connectedSensors){
                         lostConnection = true
-
                     }
                     stopRecording()
                 }
@@ -360,8 +360,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             supportFragmentManager
                 .beginTransaction()
                 .add(vFragmentContainer.id, DeviceFragment.newInstance(device))
-                .commit()
-
+                .commitNow() //todo zürück zu commit? stürzt jetzt aber zumindest nicht mehr ab
         } catch (e: Exception) {
             Log.w(TAG, "Could not add Device Fragment")
             e.printStackTrace()
@@ -642,7 +641,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
      * Option to delete the last recording in App
      */
 
-    fun deleteLastRecording(){
+    private fun deleteLastRecording(){
         if(!deletedLastRec) {
             if (FileOperations.lastFile != null) {
                 FileOperations.lastFile!!.delete()
@@ -697,8 +696,11 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 "Skip"
             ) { _, _ ->
                 myDB.addDevice(deviceMac, deviceName, "unknown")
+                //calculateDrift = true
                 addDeviceFragment(device)
+
                 calculateDeviceTimeDrift(device)
+
             }
             builder.show()
         } else {
@@ -725,6 +727,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         ) { dialog, which ->
             deviceName = input.text.toString()
             myDB.addDevice(device.address, deviceName, "unknown")
+            //calculateDrift = true
             addDeviceFragment(device)
             calculateDeviceTimeDrift(device)
         }
@@ -744,9 +747,9 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         }
     }
 
-    fun calculateDeviceTimeDrift(device: BluetoothDevice) {
-        var deviceMac = device.address
+    private fun calculateDeviceTimeDrift(device: BluetoothDevice) {
 
+        //set up a loading screen, while calculating the device drift
         var calculateDriftProgress: ProgressBar = findViewById(R.id.calculateDrift_progress)
         calculateDriftProgress.visibility = View.VISIBLE
 
@@ -756,12 +759,110 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
 
+        Log.e("Started", "calcu")
+
+
+        var deviceMac = device.address
+
+        var recedTimeStamps = recordForDriftCalculation(2, deviceMac)
+        Log.e("1", "recorded!")
+        var corredTimeStamps = correctTS(recedTimeStamps)
+        Log.e("2", "corrected!")
+        var drift2Sek = calculateDrift(2, corredTimeStamps)
+        Log.e("2", "calculated!")
+        //var drift2Sek = calculateDrift(2, correctTS(recordForDriftCalculation(2, deviceMac)))
+        Log.e("DriftFactor", drift2Sek.toString())
+
+
 
 
     //TODO Popups zum ermitteln von drift (evtl extra Methoden)
-        //calculateDriftProgress.visibility = View.INVISIBLE
-        //calculatingTextView.visibility = View.INVISIBLE
+        calculateDriftProgress.visibility = View.INVISIBLE
+        calculatingTextView.visibility = View.INVISIBLE
         window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
+
+    private fun correctTS(timestamps: ArrayList<Long>):ArrayList<Long>{
+
+        //todo implement schritt 1 und 2 (siehe Notizen)
+
+        return timestamps
+    }
+
+
+    fun calculateDrift(recordingTime:Long, timestamps: ArrayList<Long>):Long{
+
+        //todo berechnung des drift factors (recordingTime/letzterTS - ersterTS)
+
+        return 1
+    }
+
+    private fun recordForDriftCalculation(recordingTime: Long, deviceMac:String): ArrayList<Long> {
+
+        Toast.makeText(this@MainActivity, "rec for drift calc started", Toast.LENGTH_LONG)
+        var neededDevice: DeviceFragment = supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().first()
+        var driftRecorder: GestureData? = null
+
+        for (deviceFragment in supportFragmentManager.fragments.filterIsInstance<DeviceFragment>()){
+            if(deviceFragment.device().address == deviceMac){
+                neededDevice = deviceFragment
+            }
+        }
+
+
+        var recCountdown=
+        object : CountDownTimer(recordingTime, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+            }
+
+            override fun onFinish() {
+                if(supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().size!=1){
+                    Toast.makeText(this@MainActivity, "The Sensor was disconnected, please delete the Sensor in the device manager and try again!", Toast.LENGTH_LONG).show()
+                }
+
+                driftRecorder!!.endTime = SimpleDateFormat("yyyy-MM-dd--HH-mm-ss", Locale.US).format(Date(System.currentTimeMillis()))
+
+                // unassign all extremityData objects from the sensor
+                //todo currently unchanged
+                supportFragmentManager.fragments
+                      .filterIsInstance<DeviceFragment>()
+                      .forEach {
+                          DeviceViewModel.forDeviceFragment(it).extremityData = null
+                      }
+
+                driftRecorder!!.markedTimeStamps = ArrayList()
+                isRecording = false
+            }
+        }
+        recCountdown?.start()
+
+
+        // start the recording
+        isRecording = true
+        val extremityDataArray = ArrayList<ExtremityData>()
+        val extremityData = ExtremityData()
+        DeviceViewModel.forDeviceFragment(neededDevice).extremityData = extremityData
+        extremityDataArray.add(extremityData)
+
+        recLabel = "CalculateDrift_" + recordingTime + "Seconds"
+
+        driftRecorder = GestureData(
+            extremityDataArray.toTypedArray(),
+            recLabel,
+            this
+        )
+
+
+
+        var recTimeStamps = ArrayList<Long>()
+
+        driftRecorder.datas.forEach { recTimeStamps = it.accData.timeStamp }
+
+
+        Log.e("TS:", recTimeStamps.toString())
+        return recTimeStamps
+    }
+
+
 
 }
