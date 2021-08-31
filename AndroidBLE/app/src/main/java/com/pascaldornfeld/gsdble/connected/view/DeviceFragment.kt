@@ -225,4 +225,13 @@ class DeviceFragment : Fragment() {
         var name = getDeviceName(device().address);
         view?.vDeviceAddress?.text = name
     }
+
+    fun getDeviceDrift(macAdress: String): String {
+        var myDB = MyDatabaseHelper(context)
+        var deviceDrift = myDB.getDeviceDrift(macAdress)
+        myDB.close()
+
+
+        return deviceDrift
+    }
 }

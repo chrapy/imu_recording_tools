@@ -16,7 +16,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.coroutineContext
 
-class DeviceViewModel(application: Application, private val deviceMac: String, private val deviceName: String ) : //todo hier noch das selbe mit dem Drift
+class DeviceViewModel(application: Application, private val deviceMac: String, private val deviceName: String, private val deviceDrift: String) :
     AndroidViewModel(application), ReadFromDeviceIfc {
     val dataAccel = SmallDataHolder<Triple<Short, Short, Short>>(2, 1f)
     val dataGyro = SmallDataHolder<Triple<Short, Short, Short>>(2, 1f)
@@ -49,6 +49,7 @@ class DeviceViewModel(application: Application, private val deviceMac: String, p
         set(value) {
             if (value != null) value.deviceMac = deviceMac
             if (value != null) value.deviceName = deviceName
+            if (value != null) value.deviceDrift = deviceDrift
             //todo hier noch das selbe mit dem Drift
             field = value
         }
@@ -126,8 +127,8 @@ class DeviceViewModel(application: Application, private val deviceMac: String, p
                 DeviceViewModelFactory(
                     deviceFragment.requireActivity().application,
                     deviceFragment.device().address.toString(),
-                    deviceFragment.getDeviceName(deviceFragment.device().address.toString())
-                    //todo hier noch das selbe mit dem drift
+                    deviceFragment.getDeviceName(deviceFragment.device().address.toString()),
+                    deviceFragment.getDeviceDrift(deviceFragment.device().address.toString())
                 )
             ).get(DeviceViewModel::class.java)
     }
@@ -136,11 +137,11 @@ class DeviceViewModel(application: Application, private val deviceMac: String, p
 class DeviceViewModelFactory(
     private val application: Application,
     private val deviceMac: String,
-    private val deviceName: String
-    //todo hier noch das selbe mit dem Drift
+    private val deviceName: String,
+    private val deviceDrift: String
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return DeviceViewModel(application, deviceMac, deviceName) as T //todo hier noch das selbe mit dem Drift
+        return DeviceViewModel(application, deviceMac, deviceName, deviceDrift) as T
     }
 }

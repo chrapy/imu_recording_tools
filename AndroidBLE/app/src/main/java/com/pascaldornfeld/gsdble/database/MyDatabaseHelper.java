@@ -145,4 +145,23 @@ public class MyDatabaseHelper extends SQLiteOpenHelper {
             Toast.makeText(context, "Set device drift", Toast.LENGTH_SHORT).show();
         }
     }
+
+    public String getDeviceDrift(String deviceMac){
+        SQLiteDatabase db = this.getReadableDatabase();
+        String[] selectionArgs = {deviceMac};
+        String drift;
+
+        Cursor cursor = db.rawQuery("SELECT "+ COLUMN_DRIFT + " FROM "+ TABLE_NAME + " WHERE " + COLUMN_MAC + "=?", selectionArgs);
+
+        if(cursor.getCount() == 0){
+            drift = "0";
+        }else {
+            cursor.moveToFirst();
+            drift = cursor.getString(0);
+        }
+
+        cursor.close();
+
+        return drift;
+    }
 }

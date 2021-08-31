@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private lateinit var audio : AudioPlayer
     private var stopRecording : Boolean = false
 
-    //private var calculateDrift = false
+    private var calculatedDrifts = ArrayList<Double>()
 
 
     //Preferences
@@ -360,7 +360,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             supportFragmentManager
                 .beginTransaction()
                 .add(vFragmentContainer.id, DeviceFragment.newInstance(device))
-                .commitNow() //todo zürück zu commit? stürzt jetzt aber zumindest nicht mehr ab
+                .commitNow()
         } catch (e: Exception) {
             Log.w(TAG, "Could not add Device Fragment")
             e.printStackTrace()
@@ -496,7 +496,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 endRecording()
             }
         }
-
         builder.show()
     }
 
@@ -593,8 +592,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
         var textDone = false
         //get the delays from the preferences
-        try {
-            autoStartDelay = sharedPrefs!!.getString("startAutoPause", "-1")
+        autoStartDelay = try {
+            sharedPrefs!!.getString("startAutoPause", "-1")
                 .toLong() * 1000L
         } catch (ex: NumberFormatException) {
             Toast.makeText(
@@ -603,7 +602,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 Toast.LENGTH_LONG
             ).show()
             sharedPrefs.edit().putString("startAutoPause", "0").apply()
-            autoStartDelay = 0
+            0
         }
 
         // start recording after delay if desired
@@ -696,10 +695,11 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 "Skip"
             ) { _, _ ->
                 myDB.addDevice(deviceMac, deviceName, "unknown")
-                //calculateDrift = true
+
                 addDeviceFragment(device)
 
-                calculateDeviceTimeDrift(device)
+                myDB.close()
+                setUpDriftCalculation(device)
 
             }
             builder.show()
@@ -727,9 +727,10 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         ) { dialog, which ->
             deviceName = input.text.toString()
             myDB.addDevice(device.address, deviceName, "unknown")
-            //calculateDrift = true
+
             addDeviceFragment(device)
-            calculateDeviceTimeDrift(device)
+            myDB.close()
+            setUpDriftCalculation(device)
         }
 
         builder.show()
@@ -747,7 +748,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         }
     }
 
-    private fun calculateDeviceTimeDrift(device: BluetoothDevice) {
+    private fun setUpDriftCalculation(device: BluetoothDevice) {
 
         //set up a loading screen, while calculating the device drift
         var calculateDriftProgress: ProgressBar = findViewById(R.id.calculateDrift_progress)
@@ -759,49 +760,128 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
             WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
 
-        Log.e("Started", "calcu")
-
-
         var deviceMac = device.address
 
-        var recedTimeStamps = recordForDriftCalculation(2, deviceMac)
-        Log.e("1", "recorded!")
-        var corredTimeStamps = correctTS(recedTimeStamps)
-        Log.e("2", "corrected!")
-        var drift2Sek = calculateDrift(2, corredTimeStamps)
-        Log.e("2", "calculated!")
-        //var drift2Sek = calculateDrift(2, correctTS(recordForDriftCalculation(2, deviceMac)))
-        Log.e("DriftFactor", drift2Sek.toString())
+        var recordingTimesMillies = ArrayList<Long>()
+        recordingTimesMillies.add(2000)
+        recordingTimesMillies.add(5000)
+        recordingTimesMillies.add(10000)
+        recordingTimesMillies.add(30000)
+        recordingTimesMillies.add(60000)
 
+        //wait 5 seconds for connection to finish
+        var countdown=
+            object : CountDownTimer(5000, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                }
 
+                override fun onFinish() {
+                    //check if new device is still connected and run the drift calculation
+                    var stillConnected = false
+                    for (deviceFragment in supportFragmentManager.fragments.filterIsInstance<DeviceFragment>()){
+                        if(deviceFragment.device().address == deviceMac){
+                            stillConnected = true
+                        }
+                    }
 
+                    if (!stillConnected){
+                        var myDB = MyDatabaseHelper(this@MainActivity)
+                        myDB.deleteDevice(deviceMac)
+                        Toast.makeText(this@MainActivity, "The Sensor was disconnected, please try again!", Toast.LENGTH_LONG).show()
+                        myDB.close()
+                        stopCalculatingView()
+                    }else{
+                        recordForDriftCalculation(recordingTimesMillies, deviceMac)
+                    }
+                }
+            }
+        countdown?.start()
 
-    //TODO Popups zum ermitteln von drift (evtl extra Methoden)
-        calculateDriftProgress.visibility = View.INVISIBLE
-        calculatingTextView.visibility = View.INVISIBLE
-        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
 
-    private fun correctTS(timestamps: ArrayList<Long>):ArrayList<Long>{
 
-        //todo implement schritt 1 und 2 (siehe Notizen)
 
-        return timestamps
+
+    private fun calculateDrift(recordingTimes: ArrayList<Long>, timestamps: ArrayList<Long>, deviceMac:String){
+
+        var recordingTime = recordingTimes[0].toDouble()
+
+        if(timestamps.size == 0){
+            var myDB = MyDatabaseHelper(this)
+            myDB.deleteDevice(deviceMac)
+            Toast.makeText(
+                this@MainActivity,
+                "The Sensor was disconnected, please try again!",
+                Toast.LENGTH_LONG
+            ).show()
+            myDB.close()
+            stopCalculatingView()
+        }else {
+            //driftfactor = total sensor-recording-time / recording time measured by the app
+            var sensorRecTime = (timestamps.last() - timestamps.first()).toDouble()
+            Log.i("sensorRecTime", sensorRecTime.toString())
+            Log.i("handyRecTime", recordingTime.toString())
+            var drift = sensorRecTime / recordingTime
+            Log.i("Drift", drift.toString())
+            calculatedDrifts.add(drift)
+
+            recordingTimes.removeAt(0)
+
+            if (recordingTimes.size <= 0) {
+                //check if new device is still connected and finish the drift calculation
+                var stillConnected = false
+                for (deviceFragment in supportFragmentManager.fragments.filterIsInstance<DeviceFragment>()) {
+                    if (deviceFragment.device().address == deviceMac) {
+                        stillConnected = true
+                    }
+                }
+
+                if (!stillConnected) {
+                    var myDB = MyDatabaseHelper(this)
+                    myDB.deleteDevice(deviceMac)
+                    Toast.makeText(
+                        this@MainActivity,
+                        "The Sensor was disconnected, please try again!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    myDB.close()
+                    stopCalculatingView()
+                } else {
+                    finishDriftCalc(deviceMac)
+                }
+
+            } else {
+                //check if new device is still connected and continue the drift calculation
+                var stillConnected = false
+                for (deviceFragment in supportFragmentManager.fragments.filterIsInstance<DeviceFragment>()) {
+                    if (deviceFragment.device().address == deviceMac) {
+                        stillConnected = true
+                    }
+                }
+
+                if (!stillConnected) {
+                    var myDB = MyDatabaseHelper(this)
+                    myDB.deleteDevice(deviceMac)
+                    Toast.makeText(
+                        this@MainActivity,
+                        "The Sensor was disconnected, please try again!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    myDB.close()
+                    stopCalculatingView()
+                } else {
+                    recordForDriftCalculation(recordingTimes, deviceMac)
+                }
+            }
+        }
     }
 
+    private fun recordForDriftCalculation(recordingTimes: ArrayList<Long>, deviceMac:String){
 
-    fun calculateDrift(recordingTime:Long, timestamps: ArrayList<Long>):Long{
-
-        //todo berechnung des drift factors (recordingTime/letzterTS - ersterTS)
-
-        return 1
-    }
-
-    private fun recordForDriftCalculation(recordingTime: Long, deviceMac:String): ArrayList<Long> {
-
-        Toast.makeText(this@MainActivity, "rec for drift calc started", Toast.LENGTH_LONG)
         var neededDevice: DeviceFragment = supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().first()
         var driftRecorder: GestureData? = null
+        var recordingTime = recordingTimes[0]
+        var recTimeStamps = ArrayList<Long>()
 
         for (deviceFragment in supportFragmentManager.fragments.filterIsInstance<DeviceFragment>()){
             if(deviceFragment.device().address == deviceMac){
@@ -816,9 +896,16 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             }
 
             override fun onFinish() {
+                /*
                 if(supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().size!=1){
-                    Toast.makeText(this@MainActivity, "The Sensor was disconnected, please delete the Sensor in the device manager and try again!", Toast.LENGTH_LONG).show()
+                    var myDB = MyDatabaseHelper(this@MainActivity)
+                    myDB.deleteDevice(deviceMac)
+                    Toast.makeText(this@MainActivity, "The Sensor was disconnected, please try again!", Toast.LENGTH_LONG).show()
+                    myDB.close()
+                    stopCalculatingView()
                 }
+
+                 */
 
                 driftRecorder!!.endTime = SimpleDateFormat("yyyy-MM-dd--HH-mm-ss", Locale.US).format(Date(System.currentTimeMillis()))
 
@@ -832,6 +919,10 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
                 driftRecorder!!.markedTimeStamps = ArrayList()
                 isRecording = false
+
+                driftRecorder!!.datas.forEach { recTimeStamps = it.accData.timeStamp }
+
+                calculateDrift(recordingTimes,recTimeStamps, deviceMac)
             }
         }
         recCountdown?.start()
@@ -851,16 +942,42 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             recLabel,
             this
         )
+    }
 
+    private fun finishDriftCalc(deviceMac: String){
+        var finalDrift = 0.0
 
+        for (d in calculatedDrifts){
+            finalDrift += d
+        }
 
-        var recTimeStamps = ArrayList<Long>()
+        finalDrift /= calculatedDrifts.size
 
-        driftRecorder.datas.forEach { recTimeStamps = it.accData.timeStamp }
+        calculatedDrifts=ArrayList<Double>()
 
+        var myDB = MyDatabaseHelper(this)
+        myDB.updateDeviceTimeDrift(deviceMac, finalDrift.toString())
+        myDB.close()
 
-        Log.e("TS:", recTimeStamps.toString())
-        return recTimeStamps
+        Log.i("Final_drift:", finalDrift.toString())
+
+        Toast.makeText(this, "Sucessfully calculated drift!", Toast.LENGTH_LONG).show()
+
+        stopCalculatingView()
+    }
+
+    private fun stopCalculatingView(){
+        var calculateDriftProgress: ProgressBar = findViewById(R.id.calculateDrift_progress)
+        var calculatingTextView: TextView = findViewById(R.id.calculatingText)
+        calculateDriftProgress.visibility = View.INVISIBLE
+        calculatingTextView.visibility = View.INVISIBLE
+        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+    }
+
+    private fun correctTS(timestamps: ArrayList<Long>):ArrayList<Long>{
+
+        //todo implement not needed for calculate drift, but for preprocessing
+        return timestamps
     }
 
 
