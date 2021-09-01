@@ -50,9 +50,9 @@ class DeviceViewModel(application: Application, private val deviceMac: String, p
             if (value != null) value.deviceMac = deviceMac
             if (value != null) value.deviceName = deviceName
             if (value != null) value.deviceDrift = deviceDrift
-            //todo hier noch das selbe mit dem Drift
             field = value
         }
+
 
     override fun readImuData(imuData: ImuData) {
         val timeOfPacketArrival = System.currentTimeMillis()
@@ -131,6 +131,11 @@ class DeviceViewModel(application: Application, private val deviceMac: String, p
                     deviceFragment.getDeviceDrift(deviceFragment.device().address.toString())
                 )
             ).get(DeviceViewModel::class.java)
+    }
+
+    fun updateDeviceDrift(deviceDrift: String){
+        extremityData
+
     }
 }
 

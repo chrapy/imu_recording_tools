@@ -12,6 +12,7 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.*
 import android.provider.Settings
+import android.provider.SyncStateContract.Helpers.set
 import android.text.InputType
 import android.util.Log
 import android.view.Menu
@@ -32,6 +33,7 @@ import com.pascaldornfeld.gsdble.database.MyDatabaseHelper
 import com.pascaldornfeld.gsdble.file_dumping.ExtremityData
 import com.pascaldornfeld.gsdble.file_dumping.FileOperations
 import com.pascaldornfeld.gsdble.file_dumping.GestureData
+import com.pascaldornfeld.gsdble.file_dumping.SensorData
 import com.pascaldornfeld.gsdble.scan.ScanDialogFragment
 import kotlinx.android.synthetic.main.main_activity.*
 import java.text.SimpleDateFormat
@@ -240,7 +242,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             }
 
         if (sharedPrefs.getBoolean("labelRecording", false)){
-            recLabel = labelTextView.text.toString()+"_"
+            recLabel = labelTextView.text.toString()
         }else{
             recLabel=""
         }
@@ -267,6 +269,14 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
             recorder!!.endTime = SimpleDateFormat("yyyy-MM-dd--HH-mm-ss", Locale.US)
                 .format(Date(System.currentTimeMillis()))
+
+            //update device drift and name in case it changed since connecting the device
+            var myDB = MyDatabaseHelper(this)
+            recorder!!.datas.forEach {
+                it.deviceDrift =  myDB.getDeviceDrift(it.deviceMac)
+                it.deviceName = myDB.getDeviceName(it.deviceMac)
+            }
+            myDB.close()
 
             // unassign all extremityData objects from the sensors.
             supportFragmentManager.fragments
@@ -819,10 +829,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         }else {
             //driftfactor = total sensor-recording-time / recording time measured by the app
             var sensorRecTime = (timestamps.last() - timestamps.first()).toDouble()
-            Log.i("sensorRecTime", sensorRecTime.toString())
-            Log.i("handyRecTime", recordingTime.toString())
             var drift = sensorRecTime / recordingTime
-            Log.i("Drift", drift.toString())
             calculatedDrifts.add(drift)
 
             recordingTimes.removeAt(0)
@@ -896,21 +903,9 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             }
 
             override fun onFinish() {
-                /*
-                if(supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().size!=1){
-                    var myDB = MyDatabaseHelper(this@MainActivity)
-                    myDB.deleteDevice(deviceMac)
-                    Toast.makeText(this@MainActivity, "The Sensor was disconnected, please try again!", Toast.LENGTH_LONG).show()
-                    myDB.close()
-                    stopCalculatingView()
-                }
-
-                 */
-
                 driftRecorder!!.endTime = SimpleDateFormat("yyyy-MM-dd--HH-mm-ss", Locale.US).format(Date(System.currentTimeMillis()))
 
                 // unassign all extremityData objects from the sensor
-                //todo currently unchanged
                 supportFragmentManager.fragments
                       .filterIsInstance<DeviceFragment>()
                       .forEach {
