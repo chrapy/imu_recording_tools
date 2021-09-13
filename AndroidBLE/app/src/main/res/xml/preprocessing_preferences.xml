@@ -6,12 +6,6 @@
         app:summaryOff=""
         app:summaryOn="The recorded data will be directly preprocessed and saved"/>
 
-    <PreferenceCategory app:title="Sync TimeStamps">
-        <SwitchPreferenceCompat
-            app:key="SyncTS"
-            app:title="Enable Time Stamp synchronisation"
-            android:defaultValue="true"
-         />
-    </PreferenceCategory>
+
 
 </PreferenceScreen>

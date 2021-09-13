@@ -29,7 +29,20 @@
             android:windowSoftInputMode="adjustResize|adjustPan"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
-                <action android:name="com.pascaldornfeld.gsdble.DeviceManager" />
+                <action android:name="com.pascaldornfeld.gsdble.manage_sensors.SensorManager" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".manage_sensors.drift.UpdateSensorDriftManager"></activity>
+        <activity
+            android:name=".manage_sensors.drift.SensorDriftManager"
+            android:label="@string/devices_header"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize|adjustPan"
+            tools:ignore="LockedOrientationActivity">
+            <intent-filter>
+                <action android:name="com.pascaldornfeld.gsdble.manage_sensors.drift.SensorDriftManager" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

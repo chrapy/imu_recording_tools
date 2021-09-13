@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="Time Stamp drifts">
+
+        <Preference
+            app:icon="@android:drawable/ic_menu_sort_by_size"
+            app:key="editTS"
+            app:title="@string/editTS">
+            <intent android:action="com.pascaldornfeld.gsdble.manage_sensors.drift.SensorDriftManager" />
+        </Preference>
+
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

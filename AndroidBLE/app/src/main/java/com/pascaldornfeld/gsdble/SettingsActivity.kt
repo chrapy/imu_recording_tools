@@ -96,4 +96,10 @@ class SettingsActivity : AppCompatActivity(),
         }
     }
 
+    class AdvancedFragment : PreferenceFragmentCompat() {
+        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+            setPreferencesFromResource(R.xml.advanced_preferences, rootKey)
+        }
+    }
+
 }

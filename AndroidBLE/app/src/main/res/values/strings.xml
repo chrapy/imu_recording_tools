@@ -63,4 +63,6 @@
     <string name="startRecTimer_summary_title">pre-record timer duration (seconds):</string>
 
     <string name="enablePrePro_title">Enable Preprocessing</string>
+    <string name="advancedSettings">Advanced Settings</string>
+    <string name="editTS">Manually set drift</string>
 </resources>

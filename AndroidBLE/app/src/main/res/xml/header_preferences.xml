@@ -17,8 +17,14 @@
         app:key="devices_header"
         app:title="@string/devices_header"
         app:icon="@android:drawable/ic_menu_search">
-        <intent android:action="com.pascaldornfeld.gsdble.DeviceManager"/>
+        <intent android:action="com.pascaldornfeld.gsdble.manage_sensors.SensorManager"/>
     </Preference>
+
+    <Preference
+        app:fragment="com.pascaldornfeld.gsdble.SettingsActivity$AdvancedFragment"
+        app:icon="@android:drawable/btn_star"
+        app:key="advanced_header"
+        app:title="@string/advancedSettings" />
 
 
 </PreferenceScreen>
