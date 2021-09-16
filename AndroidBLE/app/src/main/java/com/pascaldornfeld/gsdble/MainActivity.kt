@@ -510,9 +510,11 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     }
 
     private fun endRecording() {
-        // write recorder object into file
-        recorder?.let { FileOperations.writeGestureFile(it) }
-        recorder = null
+        // if not deactivated write recorder object into file
+        if(sharedPrefs.getBoolean("dontSafeRawData", false)){
+            recorder?.let { FileOperations.writeGestureFile(it) }
+            recorder = null
+        }
         if(sharedPrefs.getBoolean("startNextAuto", false) && !stopRecording){
             renewRecording()
         }
