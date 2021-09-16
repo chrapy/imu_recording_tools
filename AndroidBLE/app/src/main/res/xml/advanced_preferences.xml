@@ -19,8 +19,8 @@
         android:defaultValue="false"
         android:key="dontSafeRawData"
         android:title="Don't safe raw sensor data"
-        app:summaryOff="Safe raw data"
-        app:summaryOn="Don't safe raw data"/>
+        app:summaryOff="Safes raw data"
+        app:summaryOn="Doesn't safe raw data"/>
     </PreferenceCategory>
 
 </PreferenceScreen>
