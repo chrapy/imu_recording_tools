@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private var markedTimeStamps: ArrayList<Long> = ArrayList()
     private var connectedSensors : Int = 0
     private var lostConnection : Boolean = false
+    private var tooFewPakets:Boolean = false
 
     private lateinit var audio : AudioPlayer
     private var stopRecording : Boolean = false
@@ -241,6 +242,14 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 extremityDataArray.add(extremityData)
             }
 
+        if (sharedPrefs.getBoolean("toFewData", false)){
+            tooFewPakets = false
+            supportFragmentManager.fragments
+                .filterIsInstance<DeviceFragment>()
+                .forEach {
+                    it.initaliseDataRateTracking(it.getODR())
+                }
+        }
         if (sharedPrefs.getBoolean("labelRecording", false)){
             recLabel = labelTextView.text.toString()
         }else{
@@ -308,8 +317,46 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                     }
                 }
             } else {
-                if (lostConnection) {
-                    safeIncompleteRec()
+
+                if (sharedPrefs.getBoolean("toFewData", false)){
+                    var minX = 0L
+
+                    //get the percentage from preferences
+                    try {
+                        minX =
+                            sharedPrefs.getString("setMinDataRate", "0")
+                                .toLong()
+                    } catch (ex: NumberFormatException) {
+                        Toast.makeText(
+                            this,
+                            "Value must be a number & is set to 0!",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        sharedPrefs.edit().putString("setMinDataRate", "0").apply()
+                        minX = 0
+                    }
+
+                    var minXPercent = minX/100.0
+
+
+
+                    supportFragmentManager.fragments
+                        .filterIsInstance<DeviceFragment>()
+                        .forEach {
+                            it.getLowestDataRate()
+                            if (it.getLowestDataRate()<it.getODR()*minXPercent){
+                                tooFewPakets = true
+                            }
+                        }
+                }
+
+                if (lostConnection || tooFewPakets) {
+                    if (lostConnection) {
+                        safeIncompleteRec()
+                    }
+                    if (tooFewPakets){
+                        safeWithPaketLoss()
+                    }
                 }else {
                     endRecording()
                 }
@@ -593,6 +640,35 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         builder.show()
 
     }
+
+    /**
+     * If sensors disconnect during the recording, the user is warned afterwards and asked if he wants to keep or delete the recording
+     */
+    private fun safeWithPaketLoss(){
+
+        tooFewPakets = false
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Warning!")
+        builder.setMessage("The data rate was less than desired. Do you want to safe the recording anyways?")
+
+
+        // Set up Safe button
+        builder.setPositiveButton(
+            "Safe"
+        ) { dialog, which ->
+            endRecording()
+        }
+        // Set up Delete button
+        builder.setNegativeButton(
+            "Delete"
+        ) { dialog, which ->
+            //do nothing
+        }
+
+        builder.show()
+
+    }
+
 
     /**
      * With the renewRecording Options selected (in the settings menu) the recording will be renewed until stopped by the user

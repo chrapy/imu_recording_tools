@@ -23,4 +23,22 @@
         app:summaryOn="Doesn't safe raw data"/>
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="Data Rate">
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            android:key="toFewData"
+            android:title="Warn if the data rate is less than x% of the original" />
+
+        <EditTextPreference
+            app:dependency="toFewData"
+            app:key="setMinDataRate"
+            android:defaultValue="50"
+            app:title="x:"
+            app:useSimpleSummaryProvider="true"
+            />
+
+    </PreferenceCategory>
+
+
+
 </PreferenceScreen>

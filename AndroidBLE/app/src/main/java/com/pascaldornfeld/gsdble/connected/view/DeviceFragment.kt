@@ -234,4 +234,17 @@ class DeviceFragment : Fragment() {
 
         return deviceDrift
     }
+
+    fun initaliseDataRateTracking (initVal: Long){
+        viewModel.lowestDataRate = initVal
+    }
+
+    fun getLowestDataRate(): Long {
+        return viewModel.lowestDataRate
+    }
+
+    fun getODR():Long{
+        var idrIndex = lastConfig.get()!!.odrIndex
+        return ImuConfig.GSDBLE_ODR_INDEX_TO_FREQ[idrIndex].toLong()
+    }
 }

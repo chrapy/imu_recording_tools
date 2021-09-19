@@ -27,6 +27,7 @@ class DeviceViewModel(application: Application, private val deviceMac: String, p
     val dataImuConfig = MutableLiveData<ImuConfig>()
     val disconnected = MutableLiveData<Boolean>(false)
     var firstEverRecordedTimestampMs: Long? = null
+    var lowestDataRate = 1000000L
 
     init {
         disconnected.observeForever(object : Observer<Boolean?> {
@@ -93,6 +94,12 @@ class DeviceViewModel(application: Application, private val deviceMac: String, p
                 val currentDataRateList =
                     dataDataRate.addData(currentTrackedSecond, packetsThisSecond)
 
+
+                //todo
+                if (packetsThisSecond<lowestDataRate){
+                    lowestDataRate = packetsThisSecond
+                }
+
                 val dataRateData =
                     if (clearScheduled.compareAndSet(true, false)) null
                     else currentDataRateList.toTypedArray()
@@ -133,10 +140,6 @@ class DeviceViewModel(application: Application, private val deviceMac: String, p
             ).get(DeviceViewModel::class.java)
     }
 
-    fun updateDeviceDrift(deviceDrift: String){
-        extremityData
-
-    }
 }
 
 class DeviceViewModelFactory(
