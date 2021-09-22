@@ -28,17 +28,13 @@
             android:defaultValue="false"
             android:key="toFewData"
             android:title="Warn if the data rate is less than x% of the original" />
-
         <EditTextPreference
+            android:defaultValue="50"
             app:dependency="toFewData"
             app:key="setMinDataRate"
-            android:defaultValue="50"
             app:title="x:"
-            app:useSimpleSummaryProvider="true"
-            />
+            app:useSimpleSummaryProvider="true" />
 
     </PreferenceCategory>
-
-
 
 </PreferenceScreen>

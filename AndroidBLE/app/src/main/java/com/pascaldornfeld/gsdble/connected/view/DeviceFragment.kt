@@ -192,6 +192,11 @@ class DeviceFragment : Fragment() {
                     viewModel.dataDataRate.clearData()
                 }
             })
+
+
+        view?.batteryTextView?.text= setBatterieLevel(getBatteryLevel(device()))
+
+
         // disconnect
         view.vDisconnectButton.setOnClickListener { writeToDeviceIfc?.doDisconnect() }
         return view
@@ -246,5 +251,28 @@ class DeviceFragment : Fragment() {
     fun getODR():Long{
         var idrIndex = lastConfig.get()!!.odrIndex
         return ImuConfig.GSDBLE_ODR_INDEX_TO_FREQ[idrIndex].toLong()
+    }
+
+
+    fun setBatterieLevel(level:Int):String{
+        Log.i("setBatLVL", level.toString())
+
+        if(level>=0) {
+            Log.i("setBat", "Yes")
+            return "Battery level:" + level.toString()
+        } else {
+            Log.i("setBat", "NO")
+            return "Battery level: -"
+        }
+    }
+
+
+
+    private fun getBatteryLevel(device: BluetoothDevice?): Int {
+        Log.i("GET Battery", "in")
+        return device?.let { bluetoothDevice ->
+            (bluetoothDevice.javaClass.getMethod("getBatteryLevel"))
+                .invoke(device) as Int
+        } ?: -1
     }
 }
