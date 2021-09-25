@@ -563,6 +563,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         if(sharedPrefs.getBoolean("startNextAuto", false) && !stopRecording){
             renewRecording()
         }
+
+        //todo einfügen des Preprocessings  !ACHTUNG! was tun wenn renewRecording? - vllt dafür recordings sammeln und nachträglich rechnen? oder nebenher?
     }
 
     /**
@@ -1054,22 +1056,55 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         recorder!!.datas.forEach {
 
             //option to correct the TimeStamps (todo: abfrage mit preferences)
-            correctTS(it.accData.timeStamp, it.deviceDrift.toLong())
+            var correctedTS = correctTS(it.accData.timeStamp, it.deviceDrift.toLong())
+            it.accData.timeStamp = correctedTS
+            it.gyroData.timeStamp = correctedTS //todo wie und wo speichere ich die Preprocessed Daten? wegen val/var
+
+
+
+            //option to split timeStamps up (in equally big parts) if multiple datas have the same timestamp (todo: preference)
+            var splittedTS = splitTS(it.accData.timeStamp)
+            it.accData.timeStamp = splittedTS
+            it.gyroData.timeStamp = splittedTS //todo wie und wo speichere ich die Preprocessed Daten? wegen val/var
 
         }
     }
 
     private fun correctTS(timestamps: ArrayList<Long>, deviceDrift: Long):ArrayList<Long>{
 
+        var correctedTS = ArrayList<Long>()
+        timestamps.forEach{
+            correctedTS.add(it*deviceDrift)
+        }
 
-        //todo implement not needed for calculate drift, but for preprocessing
-        return timestamps
+        return correctedTS
     }
 
+    private fun splitTS(timestamps: ArrayList<Long>):ArrayList<Long>{
+        var splittedTS = timestamps
+        var sameValue:Int = 0
+        var startValuePosition:Int = 0
+        var i:Int = 0
 
+        while(i<timestamps.size){
+            if(timestamps[startValuePosition]==timestamps[i]){
+                sameValue += 1
+                i += 1
+            } else{
+                if (sameValue>0){
+                    var j = 1
+                    while (j<sameValue){
+                        splittedTS[startValuePosition+j] = timestamps[(startValuePosition+j)-1] + (timestamps[startValuePosition+sameValue]-timestamps[startValuePosition])/sameValue
+                        j+=1
+                    }
+                    startValuePosition += sameValue
+                    sameValue = 0
+                }
+            }
+        }
 
-
-
-
+        return splittedTS
+        
+    }
 
 }
