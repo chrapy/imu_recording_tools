@@ -12,7 +12,6 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.*
 import android.provider.Settings
-import android.provider.SyncStateContract.Helpers.set
 import android.text.InputType
 import android.util.Log
 import android.view.Menu
@@ -33,7 +32,6 @@ import com.pascaldornfeld.gsdble.database.MyDatabaseHelper
 import com.pascaldornfeld.gsdble.file_dumping.ExtremityData
 import com.pascaldornfeld.gsdble.file_dumping.FileOperations
 import com.pascaldornfeld.gsdble.file_dumping.GestureData
-import com.pascaldornfeld.gsdble.file_dumping.SensorData
 import com.pascaldornfeld.gsdble.scan.ScanDialogFragment
 import kotlinx.android.synthetic.main.main_activity.*
 import java.text.SimpleDateFormat
@@ -558,7 +556,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
     private fun endRecording() {
         // if not deactivated write recorder object into file
-        if(sharedPrefs.getBoolean("dontSafeRawData", false)){
+        if(!sharedPrefs.getBoolean("dontSafeRawData", false)){
             recorder?.let { FileOperations.writeGestureFile(it) }
             recorder = null
         }
@@ -1047,11 +1045,30 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
 
-    private fun correctTS(timestamps: ArrayList<Long>):ArrayList<Long>{
+
+
+    /**
+     * organise the preprocessing options
+     */
+    fun doPreprocessing(recorder: GestureData?){
+        recorder!!.datas.forEach {
+
+            //option to correct the TimeStamps (todo: abfrage mit preferences)
+            correctTS(it.accData.timeStamp, it.deviceDrift.toLong())
+
+        }
+    }
+
+    private fun correctTS(timestamps: ArrayList<Long>, deviceDrift: Long):ArrayList<Long>{
+
 
         //todo implement not needed for calculate drift, but for preprocessing
         return timestamps
     }
+
+
+
+
 
 
 
