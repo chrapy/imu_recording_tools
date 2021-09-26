@@ -12,6 +12,7 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.*
 import android.provider.Settings
+import android.provider.SyncStateContract.Helpers.set
 import android.text.InputType
 import android.util.Log
 import android.view.Menu
@@ -32,6 +33,7 @@ import com.pascaldornfeld.gsdble.database.MyDatabaseHelper
 import com.pascaldornfeld.gsdble.file_dumping.ExtremityData
 import com.pascaldornfeld.gsdble.file_dumping.FileOperations
 import com.pascaldornfeld.gsdble.file_dumping.GestureData
+import com.pascaldornfeld.gsdble.file_dumping.SensorData
 import com.pascaldornfeld.gsdble.preprocessing.PreprocessingRunnable
 import com.pascaldornfeld.gsdble.scan.ScanDialogFragment
 import kotlinx.android.synthetic.main.main_activity.*
@@ -565,13 +567,13 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             val r: Runnable = PreprocessingRunnable(recorder, sharedPrefs, this)
             Thread(r).start()
         }
+        recorder = null
         if(sharedPrefs.getBoolean("startNextAuto", false) && !stopRecording){
             renewRecording()
         }
 
 
 
-        recorder = null
     }
 
     /**
@@ -716,10 +718,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                             audio.speak(((millisUntilFinished / 1000) + 1).toString())
                         }
                     }
-                } else {
-                    if(sharedPrefs.getBoolean("recalcWithDrift", false)) {
-                        //todo EVTL preprocessing von allen sachen starten
-                    }
                 }
             }
 
@@ -728,10 +726,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 renewRecording = false
                 if(!abortRenewRec) {
                     startRecording()
-                } else {
-                    if(sharedPrefs.getBoolean("recalcWithDrift", false)) {
-                        //todo EVTL preprocessing von allen sachen starten
-                    }
                 }
             }
         }
@@ -1075,10 +1069,5 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         calculatingTextView.visibility = View.INVISIBLE
         window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
-
-
-
-
-    
 
 }
