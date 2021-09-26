@@ -26,7 +26,7 @@
     <PreferenceCategory app:title="Data Rate">
         <SwitchPreferenceCompat
             android:defaultValue="false"
-            android:key="toFewData"
+            android:key="tooFewData"
             android:title="Warn if the data rate is less than x% of the original" />
         <EditTextPreference
             android:defaultValue="50"

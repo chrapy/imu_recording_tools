@@ -43,6 +43,12 @@
         <item>heel_to_butt</item>
         <item>@string/customLabel</item>
     </string-array>
+    <string-array name="filters">
+        <item>None</item>
+        <item>Mean-Filter</item>
+        <item>Median-Filter</item>
+        <item>Frequenzband-Filter</item>
+    </string-array>
     <!-- Preference Titles -->
     <string name="recording_header">Recording</string>
     <string name="preprocessing_header">Preprocessing</string>

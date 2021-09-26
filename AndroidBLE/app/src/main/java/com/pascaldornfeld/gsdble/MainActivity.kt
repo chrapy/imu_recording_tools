@@ -32,6 +32,7 @@ import com.pascaldornfeld.gsdble.database.MyDatabaseHelper
 import com.pascaldornfeld.gsdble.file_dumping.ExtremityData
 import com.pascaldornfeld.gsdble.file_dumping.FileOperations
 import com.pascaldornfeld.gsdble.file_dumping.GestureData
+import com.pascaldornfeld.gsdble.preprocessing.PreprocessingRunnable
 import com.pascaldornfeld.gsdble.scan.ScanDialogFragment
 import kotlinx.android.synthetic.main.main_activity.*
 import java.text.SimpleDateFormat
@@ -240,7 +241,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 extremityDataArray.add(extremityData)
             }
 
-        if (sharedPrefs.getBoolean("toFewData", false)){
+        if (sharedPrefs.getBoolean("tooFewData", false)){
             tooFewPakets = false
             supportFragmentManager.fragments
                 .filterIsInstance<DeviceFragment>()
@@ -316,7 +317,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 }
             } else {
 
-                if (sharedPrefs.getBoolean("toFewData", false)){
+                if (sharedPrefs.getBoolean("tooFewData", false)){
                     var minX = 0L
 
                     //get the percentage from preferences
@@ -558,13 +559,19 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         // if not deactivated write recorder object into file
         if(!sharedPrefs.getBoolean("dontSafeRawData", false)){
             recorder?.let { FileOperations.writeGestureFile(it) }
-            recorder = null
+        }
+        if(sharedPrefs.getBoolean("enablePreprocessing", false)) {
+
+            val r: Runnable = PreprocessingRunnable(recorder, sharedPrefs, this)
+            Thread(r).start()
         }
         if(sharedPrefs.getBoolean("startNextAuto", false) && !stopRecording){
             renewRecording()
         }
 
-        //todo einfügen des Preprocessings  !ACHTUNG! was tun wenn renewRecording? - vllt dafür recordings sammeln und nachträglich rechnen? oder nebenher?
+
+
+        recorder = null
     }
 
     /**
@@ -709,6 +716,10 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                             audio.speak(((millisUntilFinished / 1000) + 1).toString())
                         }
                     }
+                } else {
+                    if(sharedPrefs.getBoolean("recalcWithDrift", false)) {
+                        //todo EVTL preprocessing von allen sachen starten
+                    }
                 }
             }
 
@@ -717,6 +728,10 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 renewRecording = false
                 if(!abortRenewRec) {
                     startRecording()
+                } else {
+                    if(sharedPrefs.getBoolean("recalcWithDrift", false)) {
+                        //todo EVTL preprocessing von allen sachen starten
+                    }
                 }
             }
         }
@@ -845,8 +860,10 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         var calculatingTextView: TextView = findViewById(R.id.calculatingText)
         calculatingTextView.visibility = View.VISIBLE
 
-        window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+        );
 
         var deviceMac = device.address
 
@@ -875,7 +892,11 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                     if (!stillConnected){
                         var myDB = MyDatabaseHelper(this@MainActivity)
                         myDB.deleteDevice(deviceMac)
-                        Toast.makeText(this@MainActivity, "The Sensor was disconnected, please try again!", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            this@MainActivity,
+                            "The Sensor was disconnected, please try again!",
+                            Toast.LENGTH_LONG
+                        ).show()
                         myDB.close()
                         stopCalculatingView()
                     }else{
@@ -890,7 +911,11 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
 
 
-    private fun calculateDrift(recordingTimes: ArrayList<Long>, timestamps: ArrayList<Long>, deviceMac:String){
+    private fun calculateDrift(
+        recordingTimes: ArrayList<Long>,
+        timestamps: ArrayList<Long>,
+        deviceMac: String
+    ){
 
         var recordingTime = recordingTimes[0].toDouble()
 
@@ -961,7 +986,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         }
     }
 
-    private fun recordForDriftCalculation(recordingTimes: ArrayList<Long>, deviceMac:String){
+    private fun recordForDriftCalculation(recordingTimes: ArrayList<Long>, deviceMac: String){
 
         var neededDevice: DeviceFragment = supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().first()
         var driftRecorder: GestureData? = null
@@ -981,7 +1006,11 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             }
 
             override fun onFinish() {
-                driftRecorder!!.endTime = SimpleDateFormat("yyyy-MM-dd--HH-mm-ss", Locale.US).format(Date(System.currentTimeMillis()))
+                driftRecorder!!.endTime = SimpleDateFormat("yyyy-MM-dd--HH-mm-ss", Locale.US).format(
+                    Date(
+                        System.currentTimeMillis()
+                    )
+                )
 
                 // unassign all extremityData objects from the sensor
                 supportFragmentManager.fragments
@@ -995,7 +1024,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
                 driftRecorder!!.datas.forEach { recTimeStamps = it.accData.timeStamp }
 
-                calculateDrift(recordingTimes,recTimeStamps, deviceMac)
+                calculateDrift(recordingTimes, recTimeStamps, deviceMac)
             }
         }
         recCountdown?.start()
@@ -1049,62 +1078,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
 
 
-    /**
-     * organise the preprocessing options
-     */
-    fun doPreprocessing(recorder: GestureData?){
-        recorder!!.datas.forEach {
 
-            //option to correct the TimeStamps (todo: abfrage mit preferences)
-            var correctedTS = correctTS(it.accData.timeStamp, it.deviceDrift.toLong())
-            it.accData.timeStamp = correctedTS
-            it.gyroData.timeStamp = correctedTS //todo wie und wo speichere ich die Preprocessed Daten? wegen val/var
-
-
-
-            //option to split timeStamps up (in equally big parts) if multiple datas have the same timestamp (todo: preference)
-            var splittedTS = splitTS(it.accData.timeStamp)
-            it.accData.timeStamp = splittedTS
-            it.gyroData.timeStamp = splittedTS //todo wie und wo speichere ich die Preprocessed Daten? wegen val/var
-
-        }
-    }
-
-    private fun correctTS(timestamps: ArrayList<Long>, deviceDrift: Long):ArrayList<Long>{
-
-        var correctedTS = ArrayList<Long>()
-        timestamps.forEach{
-            correctedTS.add(it*deviceDrift)
-        }
-
-        return correctedTS
-    }
-
-    private fun splitTS(timestamps: ArrayList<Long>):ArrayList<Long>{
-        var splittedTS = timestamps
-        var sameValue:Int = 0
-        var startValuePosition:Int = 0
-        var i:Int = 0
-
-        while(i<timestamps.size){
-            if(timestamps[startValuePosition]==timestamps[i]){
-                sameValue += 1
-                i += 1
-            } else{
-                if (sameValue>0){
-                    var j = 1
-                    while (j<sameValue){
-                        splittedTS[startValuePosition+j] = timestamps[(startValuePosition+j)-1] + (timestamps[startValuePosition+sameValue]-timestamps[startValuePosition])/sameValue
-                        j+=1
-                    }
-                    startValuePosition += sameValue
-                    sameValue = 0
-                }
-            }
-        }
-
-        return splittedTS
-        
-    }
+    
 
 }

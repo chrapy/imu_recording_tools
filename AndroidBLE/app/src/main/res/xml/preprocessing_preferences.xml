@@ -7,5 +7,27 @@
         app:summaryOn="The recorded data will be directly preprocessed and saved"/>
 
 
+    <SwitchPreferenceCompat
+        app:key="recalcWithDrift"
+        app:title="Drift correction"
+        app:summaryOff=""
+        app:summaryOn="Enabled"
+        android:dependency="enablePreprocessing"/>
+
+    <SwitchPreferenceCompat
+        app:key="splitSameTS"
+        app:title="Split equal timestamps"
+        app:summaryOff=""
+        app:summaryOn="Data with equal timestamp are equally distributed inbetween the timestep"
+        android:dependency="enablePreprocessing"/>
+    <ListPreference
+        android:defaultValue="false"
+        android:entries="@array/filters"
+        android:entryValues="@array/filters"
+        android:key="filters"
+        android:title="Filters"
+        app:defaultValue="None"
+        android:dependency="enablePreprocessing"/>
+
 
 </PreferenceScreen>

@@ -43,5 +43,5 @@ data class SensorData(
     val xAxisData: ArrayList<Short> = ArrayList(),
     val yAxisData: ArrayList<Short> = ArrayList(),
     val zAxisData: ArrayList<Short> = ArrayList(),
-    val timeStamp: ArrayList<Long> = ArrayList()
+    var timeStamp: ArrayList<Long> = ArrayList()
 )
