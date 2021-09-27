@@ -2,15 +2,23 @@ package com.pascaldornfeld.gsdble.preprocessing
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import android.widget.Toast
 import com.pascaldornfeld.gsdble.file_dumping.FileOperations
 import com.pascaldornfeld.gsdble.file_dumping.GestureData
+import uk.me.berndporr.iirj.Bessel
+import uk.me.berndporr.iirj.Butterworth
+import uk.me.berndporr.iirj.ChebyshevI
+import uk.me.berndporr.iirj.ChebyshevII
 import kotlin.math.pow
 import kotlin.math.roundToLong
 import kotlin.math.sqrt
 
-class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedPreferences, var context: Context) : Runnable {
+
+class PreprocessingRunnable(
+    var recorder: GestureData?,
+    var sharedPrefs: SharedPreferences,
+    var context: Context
+) : Runnable {
 
 
     override fun run() {
@@ -70,7 +78,6 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
             //option to correct the TimeStamps
             if(sharedPrefs.getBoolean("recalcWithDrift", false)) {
                 var correctedTS = correctTS(timestamps, it.deviceDrift.toFloat())
-                Log.e("correctTS", correctedTS.toString())
                 timestamps=correctedTS
             }
 
@@ -79,7 +86,6 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
             //option to split timeStamps up (in equally big parts) if multiple datas have the same timestamp
             if(sharedPrefs.getBoolean("splitSameTS", false)) {
                 var splittedTS = splitTS(timestamps)
-                Log.e("splitTS", splittedTS.toString())
                 timestamps=splittedTS
             }
 
@@ -96,8 +102,8 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
                 when(useThisFilter){
                     "Mean-Filter" -> {
 
-                        acc.forEach{ data ->
-                           filteredAccData.add(meanFilter(data))
+                        acc.forEach { data ->
+                            filteredAccData.add(meanFilter(data))
                         }
 
                         /*
@@ -114,25 +120,53 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
 
                     }
                     "Median-Filter" -> {
-                        acc.forEach{ data ->
+                        acc.forEach { data ->
                             filteredAccData.add(medianFilter(data))
                         }
 
                         gyro.forEach { data ->
                             filteredGyroData.add(medianFilter(data))
                         }
-                    }
-                    "IIR-Filter" -> {
-                        acc.forEach{ data ->
-                            filteredAccData.add(iirFilter(data))
+                    }c
+                    "Butterworth-Filter" -> {
+                        acc.forEach { data ->
+                            filteredAccData.add(butterworthFilter(data))
                         }
 
                         gyro.forEach { data ->
-                            filteredGyroData.add(iirFilter(data))
+                            filteredGyroData.add(butterworthFilter(data))
+                        }
+                    }
+                    "Bessel-Filter" -> {
+                        acc.forEach { data ->
+                            filteredAccData.add(besselFilter(data))
+                        }
+
+                        gyro.forEach { data ->
+                            filteredGyroData.add(besselFilter(data))
+                        }
+                    }
+                    "ChebyshevI-Filter" -> {
+                        acc.forEach { data ->
+                            filteredAccData.add(chebyshevIFilter(data))
+                        }
+
+                        gyro.forEach { data ->
+                            filteredGyroData.add(chebyshevIFilter(data))
+                        }
+                    }
+                    "ChebyshevII-Filter" -> {
+                        acc.forEach { data ->
+                            filteredAccData.add(chebyshevIIFilter(data))
+                        }
+
+                        gyro.forEach { data ->
+                            filteredGyroData.add(chebyshevIIFilter(data))
                         }
                     }
                     "Kalman-Filter" -> {
-                        acc.forEach{ data ->
+
+                        acc.forEach { data ->
                             filteredAccData.add(kalmanFilter(data))
                         }
 
@@ -148,12 +182,6 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
                 acc = filteredAccData
                 gyro = filteredGyroData
             }
-            //todo FIlters
-
-            //todo mean-filter
-            //todo median-filter
-            //todo Frequenzbandfilter
-            //todo kalman filter
 
             //peakDetection
             var detectedAccPeaks = DetectedPeaks()
@@ -165,12 +193,32 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
 
 
             //safe the preprocessed Data in an PreprocessedSensorData object
-            var accData = PreprocessedSensorData(accXAxis, accYAxis, accZAxis, accTotal, timestamps, detectedAccPeaks)
+            var accData = PreprocessedSensorData(
+                accXAxis,
+                accYAxis,
+                accZAxis,
+                accTotal,
+                timestamps,
+                detectedAccPeaks
+            )
 
-            var gyroData = PreprocessedSensorData(gyroXAxis, gyroYAxis, gyroZAxis, gyroTotal, timestamps, detectedGyroPeaks)
+            var gyroData = PreprocessedSensorData(
+                gyroXAxis,
+                gyroYAxis,
+                gyroZAxis,
+                gyroTotal,
+                timestamps,
+                detectedGyroPeaks
+            )
 
 
-            var preprocessedData = PreprocessedExtremityData(it.deviceMac, it.deviceName, it.deviceDrift, accData, gyroData)
+            var preprocessedData = PreprocessedExtremityData(
+                it.deviceMac,
+                it.deviceName,
+                it.deviceDrift,
+                accData,
+                gyroData
+            )
 
 
             //add the ExtremityData to the ExtremityData Array
@@ -183,7 +231,15 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
 
         //safe data as 'PreprocessedData'
 
-        var preprocessed = PreprocessedData(recorder.startTime, recorder.endTime, recorder.deviceId, recorder.label, recorder.note, recorder.markedTimeStamps, preprocessedDataArray.toTypedArray())
+        var preprocessed = PreprocessedData(
+            recorder.startTime,
+            recorder.endTime,
+            recorder.deviceId,
+            recorder.label,
+            recorder.note,
+            recorder.markedTimeStamps,
+            preprocessedDataArray.toTypedArray()
+        )
 
         preprocessed.let { FileOperations.writePreprocessedFile(it) }
     }
@@ -198,13 +254,13 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
         var firstTS = timestamps.first()
         var timestampsFromZero = ArrayList<Long>()
         timestamps.forEach{
-            timestampsFromZero.add(it-firstTS)
+            timestampsFromZero.add(it - firstTS)
         }
 
         return timestampsFromZero
     }
 
-    private fun convertInMeaningfulUnits(data:ArrayList<Double>, whichData:String):ArrayList<Double>{
+    private fun convertInMeaningfulUnits(data: ArrayList<Double>, whichData: String):ArrayList<Double>{
 
         var convToMeaningfulUnits = ArrayList<Double>()
         var bitDataOutput = 16
@@ -290,7 +346,7 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
         var factor = ((2.0.pow(bitDataOutput.toDouble())/range)/devideRange)
 
         data.forEach{
-            convToMeaningfulUnits.add((it/factor))
+            convToMeaningfulUnits.add((it / factor))
         }
 
         return convToMeaningfulUnits
@@ -298,8 +354,6 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
 
     private fun correctTS(timestamps: ArrayList<Long>, deviceDrift: Float):ArrayList<Long>{
 
-        Log.e("In", "correctTS")
-        Log.e("drift", deviceDrift.toString())
         var correctedTS = ArrayList<Long>()
         timestamps.forEach{
             var corrected = it*deviceDrift
@@ -311,7 +365,6 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
 
     private fun splitTS(timestamps: ArrayList<Long>):ArrayList<Long>{
 
-        Log.e("In", "splitTS")
 
         var splittedTS = timestamps
         var sameValue:Int = 0
@@ -339,21 +392,27 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
     }
 
 
-    private fun getTotalVectorLength(xAxis: ArrayList<Double>, yAxis: ArrayList<Double>, zAxis: ArrayList<Double>): ArrayList<Double> {
+    private fun getTotalVectorLength(
+        xAxis: ArrayList<Double>,
+        yAxis: ArrayList<Double>,
+        zAxis: ArrayList<Double>
+    ): ArrayList<Double> {
         var i = 0
         var totalVectorLength = ArrayList<Double>()
 
         while (i < xAxis.size) {
-            totalVectorLength.add(sqrt(
-                xAxis[i].pow(2.0) + yAxis[i].pow(2.0) + zAxis[i]
-                .pow(2.0)
-            ))
+            totalVectorLength.add(
+                sqrt(
+                    xAxis[i].pow(2.0) + yAxis[i].pow(2.0) + zAxis[i]
+                        .pow(2.0)
+                )
+            )
             i++
         }
         return totalVectorLength
     }
 
-    private fun arrayListShortToDouble(input:ArrayList<Short>):ArrayList<Double>{
+    private fun arrayListShortToDouble(input: ArrayList<Short>):ArrayList<Double>{
         var output = ArrayList<Double>()
 
         input.forEach {
@@ -367,7 +426,7 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
      * filters
      */
 
-    private fun meanFilter(data:ArrayList<Double>):ArrayList<Double>{
+    private fun meanFilter(data: ArrayList<Double>):ArrayList<Double>{
         //todo: implement
         return data
     }
@@ -382,8 +441,32 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
         return data
     }
 
-    private fun iirFilter(data: ArrayList<Double>): ArrayList<Double> {
-        //todo: implement
+    private fun butterworthFilter(data: ArrayList<Double>): ArrayList<Double> {
+        //todo: implement and decide which filters (low, high bandpass, bandstop) see https://github.com/berndporr/iirj
+        val butterworth = Butterworth()
+
+        return data
+    }
+
+    private fun besselFilter(data: ArrayList<Double>): ArrayList<Double> {
+        //todo: implement and decide which filters (low, high bandpass, bandstop) see https://github.com/berndporr/iirj
+
+        val bessel = Bessel()
+
+        return data
+    }
+
+    private fun chebyshevIFilter(data: ArrayList<Double>): ArrayList<Double> {
+        //todo: implement and decide which filters (low, high bandpass, bandstop) see https://github.com/berndporr/iirj
+        val ch = ChebyshevI()
+
+        return data
+    }
+
+    private fun chebyshevIIFilter(data: ArrayList<Double>): ArrayList<Double> {
+        //todo: implement and decide which filters (low, high bandpass, bandstop) see https://github.com/berndporr/iirj
+        val ch2 = ChebyshevII()
+
         return data
     }
 

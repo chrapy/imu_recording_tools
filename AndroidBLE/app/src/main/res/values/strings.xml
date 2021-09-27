@@ -46,7 +46,10 @@
     <string-array name="filters">
         <item>Mean-Filter</item>
         <item>Median-Filter</item>
-        <item>IIR-Filter</item>
+        <item>Bandstop-Filter</item>
+        <item>Bandpass-Filter</item>
+        <item>Lowpass-Filter</item>
+        <item>Highpass-Filter</item>
         <item>Kalman-Filter</item>
     </string-array>
     <!-- Preference Titles -->
