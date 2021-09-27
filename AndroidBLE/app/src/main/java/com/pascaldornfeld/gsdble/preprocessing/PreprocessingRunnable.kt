@@ -3,6 +3,7 @@ package com.pascaldornfeld.gsdble.preprocessing
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import android.widget.Toast
 import com.pascaldornfeld.gsdble.file_dumping.FileOperations
 import com.pascaldornfeld.gsdble.file_dumping.GestureData
 import kotlin.math.pow
@@ -34,24 +35,37 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
             //set the first TS as 0 and calculate the rest relative to 0
             var timestamps = startTSfromZero(it.accData.timeStamp)
 
-
-            //todo einheiten umrechnen
-
             //safe the sensors data
             //accelerometer
-            var accXAxis = it.accData.xAxisData
-            var accYAxis = it.accData.yAxisData
-            var accZAxis = it.accData.zAxisData
+            var accXAxis = arrayListShortToDouble(it.accData.xAxisData)
+            var accYAxis = arrayListShortToDouble(it.accData.yAxisData)
+            var accZAxis = arrayListShortToDouble(it.accData.zAxisData)
             var accTotal = getTotalVectorLength(accXAxis, accYAxis, accZAxis)
 
+            var acc = arrayListOf<ArrayList<Double>>(accXAxis, accYAxis, accZAxis, accTotal)
+
             //gyroscope
-            var gyroXAxis = it.gyroData.xAxisData
-            var gyroYAxis = it.gyroData.yAxisData
-            var gyroZAxis = it.gyroData.zAxisData
+            var gyroXAxis = arrayListShortToDouble(it.gyroData.xAxisData)
+            var gyroYAxis = arrayListShortToDouble(it.gyroData.yAxisData)
+            var gyroZAxis = arrayListShortToDouble(it.gyroData.zAxisData)
             var gyroTotal = getTotalVectorLength(gyroXAxis, gyroYAxis, gyroZAxis)
 
+            var gyro = arrayListOf(gyroXAxis, gyroYAxis, gyroZAxis, gyroTotal)
 
+            //convert the data to meaningful units
+            if (sharedPrefs.getBoolean("convertToMU", true)){
+                //accelerator data
+                accXAxis = convertInMeaningfulUnits(accXAxis, "acc")
+                accYAxis = convertInMeaningfulUnits(accYAxis, "acc")
+                accZAxis = convertInMeaningfulUnits(accZAxis, "acc")
+                accTotal = convertInMeaningfulUnits(accTotal, "acc")
 
+                //gyroscope data
+                gyroXAxis = convertInMeaningfulUnits(gyroXAxis, "gyro")
+                gyroYAxis = convertInMeaningfulUnits(gyroYAxis, "gyro")
+                gyroZAxis = convertInMeaningfulUnits(gyroZAxis, "gyro")
+                gyroTotal = convertInMeaningfulUnits(gyroTotal, "gyro")
+            }
 
             //option to correct the TimeStamps
             if(sharedPrefs.getBoolean("recalcWithDrift", false)) {
@@ -69,6 +83,71 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
                 timestamps=splittedTS
             }
 
+
+            //safe the data as
+
+
+            if(sharedPrefs.getBoolean("useFilters", false)) {
+                var useThisFilter = sharedPrefs.getString("filters", "none")
+
+                var filteredAccData = arrayListOf<ArrayList<Double>>()
+                var filteredGyroData = arrayListOf<ArrayList<Double>>()
+
+                when(useThisFilter){
+                    "Mean-Filter" -> {
+
+                        acc.forEach{ data ->
+                           filteredAccData.add(meanFilter(data))
+                        }
+
+                        /*
+                        accXAxis = meanFilter(accXAxis)
+                        accYAxis = meanFilter(accYAxis)
+                        accZAxis = meanFilter(accZAxis)
+                        accTotal = meanFilter(accTotal)
+
+                         */
+
+                        gyro.forEach { data ->
+                            filteredGyroData.add(meanFilter(data))
+                        }
+
+                    }
+                    "Median-Filter" -> {
+                        acc.forEach{ data ->
+                            filteredAccData.add(medianFilter(data))
+                        }
+
+                        gyro.forEach { data ->
+                            filteredGyroData.add(medianFilter(data))
+                        }
+                    }
+                    "IIR-Filter" -> {
+                        acc.forEach{ data ->
+                            filteredAccData.add(iirFilter(data))
+                        }
+
+                        gyro.forEach { data ->
+                            filteredGyroData.add(iirFilter(data))
+                        }
+                    }
+                    "Kalman-Filter" -> {
+                        acc.forEach{ data ->
+                            filteredAccData.add(kalmanFilter(data))
+                        }
+
+                        gyro.forEach { data ->
+                            filteredGyroData.add(kalmanFilter(data))
+                        }
+                    }
+                    else -> {
+                        //do nothing
+                    }
+                }
+
+                acc = filteredAccData
+                gyro = filteredGyroData
+            }
             //todo FIlters
 
             //todo mean-filter
@@ -85,10 +164,11 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
 
 
 
-            //safe the preprocessed Data in an ExtremityData object
+            //safe the preprocessed Data in an PreprocessedSensorData object
             var accData = PreprocessedSensorData(accXAxis, accYAxis, accZAxis, accTotal, timestamps, detectedAccPeaks)
 
             var gyroData = PreprocessedSensorData(gyroXAxis, gyroYAxis, gyroZAxis, gyroTotal, timestamps, detectedGyroPeaks)
+
 
             var preprocessedData = PreprocessedExtremityData(it.deviceMac, it.deviceName, it.deviceDrift, accData, gyroData)
 
@@ -108,6 +188,12 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
         preprocessed.let { FileOperations.writePreprocessedFile(it) }
     }
 
+
+
+    /**
+     * preprocessing work is done below
+     */
+
     private fun startTSfromZero(timestamps: ArrayList<Long>):ArrayList<Long>{
         var firstTS = timestamps.first()
         var timestampsFromZero = ArrayList<Long>()
@@ -116,6 +202,98 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
         }
 
         return timestampsFromZero
+    }
+
+    private fun convertInMeaningfulUnits(data:ArrayList<Double>, whichData:String):ArrayList<Double>{
+
+        var convToMeaningfulUnits = ArrayList<Double>()
+        var bitDataOutput = 16
+        var range = 16
+        var signed = true
+
+        if (whichData=="acc"){
+            //bitDataOutput
+            try {
+                bitDataOutput =
+                    sharedPrefs.getString("AccOutputSize", "16")
+                        .toInt()
+            } catch (ex: NumberFormatException) {
+                Toast.makeText(
+                    context,
+                    "Output size must be a number & is set to 16!",
+                    Toast.LENGTH_LONG
+                ).show()
+                sharedPrefs.edit().putString("AccOutputSize", "16").apply()
+            }
+
+            //range
+            try {
+                range =
+                    sharedPrefs.getString("AccRange", "16")
+                        .toInt()
+            } catch (ex: NumberFormatException) {
+                Toast.makeText(
+                    context,
+                    "Range must be a number & is set to 16!",
+                    Toast.LENGTH_LONG
+                ).show()
+                sharedPrefs.edit().putString("AccRange", "16").apply()
+            }
+
+            //Acc Signed
+            signed = sharedPrefs.getBoolean("AccSigned", true)
+        } else {
+            if (whichData == "gyro"){
+                //bitDataOutput
+                try {
+                    bitDataOutput =
+                        sharedPrefs.getString("GyroOutputSize", "16")
+                            .toInt()
+                } catch (ex: NumberFormatException) {
+                    Toast.makeText(
+                        context,
+                        "Output size must be a number & is set to 16!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    sharedPrefs.edit().putString("GyroOutputSize", "16").apply()
+                }
+
+                //range
+                try {
+                    range =
+                        sharedPrefs.getString("GyroRange", "2000")
+                            .toInt()
+                } catch (ex: NumberFormatException) {
+                    Toast.makeText(
+                        context,
+                        "Range must be a number & is set to 2000!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    sharedPrefs.edit().putString("GyroRange", "2000").apply()
+                }
+
+                //Acc Signed
+                signed = sharedPrefs.getBoolean("GyroSigned", false)
+            }
+        }
+
+
+
+        var devideRange = 1
+
+        if (signed){
+            devideRange = 2
+        } else {
+            devideRange = 1
+        }
+
+        var factor = ((2.0.pow(bitDataOutput.toDouble())/range)/devideRange)
+
+        data.forEach{
+            convToMeaningfulUnits.add((it/factor))
+        }
+
+        return convToMeaningfulUnits
     }
 
     private fun correctTS(timestamps: ArrayList<Long>, deviceDrift: Float):ArrayList<Long>{
@@ -161,16 +339,53 @@ class PreprocessingRunnable(var recorder: GestureData?, var sharedPrefs: SharedP
     }
 
 
-    private fun getTotalVectorLength(xAxis: ArrayList<Short>, yAxis: ArrayList<Short>, zAxis: ArrayList<Short>): ArrayList<Short> {
+    private fun getTotalVectorLength(xAxis: ArrayList<Double>, yAxis: ArrayList<Double>, zAxis: ArrayList<Double>): ArrayList<Double> {
         var i = 0
-        var totalVectorLength = ArrayList<Short>()
+        var totalVectorLength = ArrayList<Double>()
 
         while (i < xAxis.size) {
-            totalVectorLength.add(sqrt(xAxis[i].toDouble().pow(2.0) + yAxis[i].toDouble().pow(2.0) + zAxis[i].toDouble()
+            totalVectorLength.add(sqrt(
+                xAxis[i].pow(2.0) + yAxis[i].pow(2.0) + zAxis[i]
                 .pow(2.0)
-            ).toInt().toShort())
+            ))
             i++
         }
         return totalVectorLength
     }
+
+    private fun arrayListShortToDouble(input:ArrayList<Short>):ArrayList<Double>{
+        var output = ArrayList<Double>()
+
+        input.forEach {
+            output.add(it.toDouble())
+        }
+
+        return output
+    }
+
+    /**
+     * filters
+     */
+
+    private fun meanFilter(data:ArrayList<Double>):ArrayList<Double>{
+        //todo: implement
+        return data
+    }
+
+    private fun medianFilter(data: ArrayList<Double>): ArrayList<Double> {
+        //todo: implement
+        return data
+    }
+
+    private fun kalmanFilter(data: ArrayList<Double>): ArrayList<Double> {
+        //todo: implement
+        return data
+    }
+
+    private fun iirFilter(data: ArrayList<Double>): ArrayList<Double> {
+        //todo: implement
+        return data
+    }
+
+
 }

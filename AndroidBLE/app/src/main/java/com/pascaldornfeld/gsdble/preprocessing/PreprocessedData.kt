@@ -30,10 +30,10 @@ data class PreprocessedExtremityData(
 )
 
 data class PreprocessedSensorData(
-    val xAxisData: ArrayList<Short> = ArrayList(),
-    val yAxisData: ArrayList<Short> = ArrayList(),
-    val zAxisData: ArrayList<Short> = ArrayList(),
-    val totalVector: ArrayList<Short> = ArrayList(),
+    val xAxisData: ArrayList<Double> = ArrayList(),
+    val yAxisData: ArrayList<Double> = ArrayList(),
+    val zAxisData: ArrayList<Double> = ArrayList(),
+    val totalVector: ArrayList<Double> = ArrayList(),
     val timeStamp: ArrayList<Long> = ArrayList(),
     val detectedPeaks: DetectedPeaks = DetectedPeaks()
 )

@@ -20,14 +20,102 @@
         app:summaryOff=""
         app:summaryOn="Data with equal timestamp are equally distributed inbetween the timestep"
         android:dependency="enablePreprocessing"/>
+
+    <PreferenceCategory app:title="Filters">
+        <SwitchPreferenceCompat
+            app:key="useFilters"
+            app:title="Use a filter"
+            app:summaryOn="Choose a filter below"
+            app:defaultValue="false"
+            android:dependency="enablePreprocessing"/>
     <ListPreference
         android:defaultValue="false"
         android:entries="@array/filters"
         android:entryValues="@array/filters"
         android:key="filters"
         android:title="Filters"
-        app:defaultValue="None"
-        android:dependency="enablePreprocessing"/>
+        android:dependency="useFilters"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Peak Detection">
+        <SwitchPreferenceCompat
+            app:key="usePeakDetection"
+            app:title="Use a Peak Detection"
+            app:summaryOn="Choose an algorithm below"
+            app:defaultValue="false"
+            android:dependency="enablePreprocessing"/>
+        <ListPreference
+            android:defaultValue="false"
+            android:entries="@array/filters"
+            android:entryValues="@array/filters"
+            android:key="filters"
+            android:title="Filters"
+            android:dependency="useFilters"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Meaningful Units">
+
+        <SwitchPreferenceCompat
+            app:key="convertToMU"
+            app:title="Convert to Meaningful Units"
+            app:summaryOn="Please set up the details for accelerometer and gyroscope below"
+            app:defaultValue="true"
+            android:dependency="enablePreprocessing"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Accelerometer">
+        <EditTextPreference
+            app:key="AccOutputSize"
+            android:defaultValue="16"
+            app:title="Data Output size (bit)"
+            app:useSimpleSummaryProvider="true"
+            android:dependency="convertToMU"
+            />
+
+        <EditTextPreference
+            app:key="AccRange"
+            android:defaultValue="16"
+            app:title="Range"
+            app:useSimpleSummaryProvider="true"
+            android:dependency="convertToMU"
+            />
+
+        <SwitchPreferenceCompat
+            app:key="AccSigned"
+            app:title="Is range partially signed?"
+            app:defaultValue="true"
+            android:summaryOn="Yes"
+            android:summaryOff="No"
+            android:dependency="convertToMU"
+            />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Gyroscope">
+        <EditTextPreference
+            app:key="GyroOutputSize"
+            android:defaultValue="16"
+            app:title="Data Output size (bit)"
+            app:useSimpleSummaryProvider="true"
+            android:dependency="convertToMU"
+            />
+
+        <EditTextPreference
+            app:key="GyroRange"
+            android:defaultValue="2000"
+            app:title="Range"
+            app:useSimpleSummaryProvider="true"
+            android:dependency="convertToMU"
+            />
+
+        <SwitchPreferenceCompat
+            app:key="GyroSigned"
+            app:title="Is range partially signed?"
+            app:defaultValue="false"
+            android:summaryOn="Yes"
+            android:summaryOff="No"
+            android:dependency="convertToMU"
+            />
+    </PreferenceCategory>
 
 
 </PreferenceScreen>
