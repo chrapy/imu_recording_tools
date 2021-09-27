@@ -64,6 +64,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private lateinit var countDownText : TextView
     private lateinit var vibrator : Vibrator
 
+    private var recordingStartSystemTime = 0L
     private var markedTimeStamps: ArrayList<Long> = ArrayList()
     private var connectedSensors : Int = 0
     private var lostConnection : Boolean = false
@@ -234,6 +235,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         // start the recording
         vRecordButton.text = getString(R.string.stop)
         isRecording = true
+        recordingStartSystemTime = System.currentTimeMillis()
         val extremityDataArray = ArrayList<ExtremityData>()
         supportFragmentManager.fragments
             .filterIsInstance<DeviceFragment>()
@@ -296,6 +298,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 }
 
             recorder!!.markedTimeStamps = markedTimeStamps
+
+            markedTimeStamps = ArrayList<Long>()
 
             countDownText.text = ""
             vRecordButton.text = getString(R.string.start)
@@ -607,15 +611,25 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         builder.show()
     }
 
+    /**
+     * safe timestamps of the current recording (based on system time) whenever the "mark timestamp" button is triggered
+     */
     fun markTimeStamp(v: View){
         if(isRecording){
             Toast.makeText(this, "marked timestamp!", Toast.LENGTH_SHORT).show()
             try {
+                markedTimeStamps.add(
+                    (System.currentTimeMillis() - recordingStartSystemTime)
+                )
+
+                /*
                 recorder!!.datas!![recorder!!.datas!!.lastIndex].accData.timeStamp.let {
                     markedTimeStamps.add(
                         it.last()
                     )
                 }
+
+                 */
             } catch (e: Exception){
                 Toast.makeText(this, "no recordable devices connected", Toast.LENGTH_LONG).show()
             }

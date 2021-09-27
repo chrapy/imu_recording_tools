@@ -3,6 +3,7 @@ package com.pascaldornfeld.gsdble.file_dumping
 import android.os.AsyncTask
 import android.os.Environment
 import com.google.gson.GsonBuilder
+import com.pascaldornfeld.gsdble.preprocessing.PreprocessedData
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
@@ -68,5 +69,39 @@ object FileOperations {
     private fun getGesturesFolderPath(): String =
         "${Environment.getExternalStorageDirectory().absolutePath}${File.separator}GSD_Recordings${File.separator}"
 
+
+    /**
+     * Write preprocessed gesture data to a JSON file
+     * and save it in the user's directory in background.
+     *
+     * @param preprocessedData The class which contains all preprocessed data of the gesture
+     */
+    fun writePreprocessedFile(preprocessedData: PreprocessedData) {
+        AsyncTask.execute {
+            // create filename
+            synchronized(FileOperations) {
+                var fileNamePostfix = 2
+                val recordingName = preprocessedData.label.toString()  + preprocessedData.startTime.toString() + "_PreProcessed"
+                var file = getFileFromPrefixAndCreateParent(recordingName)
+                while (file.exists()) {
+                    file = getFileFromPrefixAndCreateParent(
+                        "${preprocessedData.startTime.toString()}_$fileNamePostfix"
+                    )
+                    fileNamePostfix++
+                }
+                file
+            }.let { file: File ->
+                lastFile = file
+                // write file
+                FileWriter(file, false).use { fileWriter: FileWriter ->
+                    BufferedWriter(fileWriter).use { bufferedWriter: BufferedWriter ->
+                        bufferedWriter.write(gson.toJson(preprocessedData))
+                        bufferedWriter.newLine()
+                    }
+                }
+            }
+
+        }
+    }
 
 }
