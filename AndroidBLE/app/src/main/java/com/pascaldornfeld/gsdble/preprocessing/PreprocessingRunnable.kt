@@ -98,16 +98,103 @@ class PreprocessingRunnable(
             if(sharedPrefs.getBoolean("useFilters", false)) {
                 var useThisFilter = sharedPrefs.getString("filters", "none")
                 var samplingRate = (timestamps.size.toDouble()/(timestamps.last().toDouble() - timestamps.first().toDouble()))*1000 //sampling rate in Hz
+                
+                var windowsize=0
+                try {
+                    windowsize =
+                        (sharedPrefs!!.getString("windowsize", "0")
+                            .toInt())/2
+                } catch (ex: NumberFormatException) {
+                    Toast.makeText(
+                        context,
+                        "Windowsize must be an Integer & is set to 0!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    sharedPrefs.edit().putString("windowsize", "0").apply()
+                }
 
-
-
-                //todo parameter aus preferences
-                var windowsize=0    //int
                 var order = 0         //int
-                var centerFreq = 0.0 //double
-                var widthFreq = 0.0 //double
-                var cutOffFreq = 0.0    //double
-                var ripple = 0.0 //double
+                try {
+                    order =
+                        sharedPrefs!!.getString("order", "1")
+                            .toInt()
+                } catch (ex: NumberFormatException) {
+                    Toast.makeText(
+                        context,
+                        "Order must be an Integer & is set to 0!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    sharedPrefs.edit().putString("order", "0").apply()
+                }
+
+
+                var centerFreq = 1.0
+                try {
+                    centerFreq =
+                        sharedPrefs!!.getString("centerFreq", "1.0")
+                            .toDouble()
+
+                    //todo checken ob das to Double klappt!!!
+                    Log.e("toDouble", centerFreq.toString())
+                } catch (ex: NumberFormatException) {
+                    Toast.makeText(
+                        context,
+                        "The center frequency must be a Double & is set to 1.0!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    sharedPrefs.edit().putString("centerFreq", "1.0").apply()
+                }
+
+
+                var widthFreq = 1.0
+                try {
+                    widthFreq =
+                        sharedPrefs!!.getString("widthFreq", "1.0")
+                            .toDouble()
+
+                } catch (ex: NumberFormatException) {
+                    Toast.makeText(
+                        context,
+                        "The width frequency must be a Double & is set to 1.0!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    sharedPrefs.edit().putString("widthFreq", "1.0").apply()
+                }
+
+
+                var cutOffFreq = 1.0
+                try {
+                    cutOffFreq =
+                        sharedPrefs!!.getString("cutOffFreq", "1.0")
+                            .toDouble()
+
+                } catch (ex: NumberFormatException) {
+                    Toast.makeText(
+                        context,
+                        "The cutoff frequency must be a Double & is set to 1.0!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    sharedPrefs.edit().putString("cutOffFreq", "1.0").apply()
+                }
+
+
+
+                var ripple = 1.0
+                try {
+                    ripple =
+                        sharedPrefs!!.getString("ripple", "1.0")
+                            .toDouble()
+
+                } catch (ex: NumberFormatException) {
+                    Toast.makeText(
+                        context,
+                        "Ripple must be a Double & is set to 1.0!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    sharedPrefs.edit().putString("ripple", "1.0").apply()
+                }
+
+
 
                 var filteredAccData = arrayListOf<ArrayList<Double>>()
                 var filteredGyroData = arrayListOf<ArrayList<Double>>()
@@ -456,6 +543,9 @@ class PreprocessingRunnable(
                 noOfElement +=1
                 j--
             }
+
+            sum += data[i]
+            noOfElement += 1
 
             mean = sum/noOfElement
 
