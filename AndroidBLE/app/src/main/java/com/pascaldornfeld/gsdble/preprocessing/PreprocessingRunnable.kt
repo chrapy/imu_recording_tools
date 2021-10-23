@@ -2,6 +2,7 @@ package com.pascaldornfeld.gsdble.preprocessing
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import android.widget.Toast
 import com.pascaldornfeld.gsdble.file_dumping.FileOperations
 import com.pascaldornfeld.gsdble.file_dumping.GestureData
@@ -9,6 +10,7 @@ import uk.me.berndporr.iirj.Bessel
 import uk.me.berndporr.iirj.Butterworth
 import uk.me.berndporr.iirj.ChebyshevI
 import uk.me.berndporr.iirj.ChebyshevII
+import kotlin.collections.ArrayList
 import kotlin.math.pow
 import kotlin.math.roundToLong
 import kotlin.math.sqrt
@@ -63,16 +65,16 @@ class PreprocessingRunnable(
             //convert the data to meaningful units
             if (sharedPrefs.getBoolean("convertToMU", true)){
                 //accelerator data
-                accXAxis = convertInMeaningfulUnits(accXAxis, "acc")
-                accYAxis = convertInMeaningfulUnits(accYAxis, "acc")
-                accZAxis = convertInMeaningfulUnits(accZAxis, "acc")
-                accTotal = convertInMeaningfulUnits(accTotal, "acc")
+                acc[0] = convertInMeaningfulUnits(acc[0], "acc")
+                acc[1] = convertInMeaningfulUnits(acc[1], "acc")
+                acc[2] = convertInMeaningfulUnits(acc[2], "acc")
+                acc[3] = convertInMeaningfulUnits(acc[3], "acc")
 
                 //gyroscope data
-                gyroXAxis = convertInMeaningfulUnits(gyroXAxis, "gyro")
-                gyroYAxis = convertInMeaningfulUnits(gyroYAxis, "gyro")
-                gyroZAxis = convertInMeaningfulUnits(gyroZAxis, "gyro")
-                gyroTotal = convertInMeaningfulUnits(gyroTotal, "gyro")
+                gyro[0] = convertInMeaningfulUnits(gyro[0], "gyro")
+                gyro[1] = convertInMeaningfulUnits(gyro[1], "gyro")
+                gyro[2] = convertInMeaningfulUnits(gyro[2], "gyro")
+                gyro[3] = convertInMeaningfulUnits(gyro[3], "gyro")
             }
 
             //option to correct the TimeStamps
@@ -95,6 +97,17 @@ class PreprocessingRunnable(
 
             if(sharedPrefs.getBoolean("useFilters", false)) {
                 var useThisFilter = sharedPrefs.getString("filters", "none")
+                var samplingRate = (timestamps.size.toDouble()/(timestamps.last().toDouble() - timestamps.first().toDouble()))*1000 //sampling rate in Hz
+
+
+
+                //todo parameter aus preferences
+                var windowsize=0    //int
+                var order = 0         //int
+                var centerFreq = 0.0 //double
+                var widthFreq = 0.0 //double
+                var cutOffFreq = 0.0    //double
+                var ripple = 0.0 //double
 
                 var filteredAccData = arrayListOf<ArrayList<Double>>()
                 var filteredGyroData = arrayListOf<ArrayList<Double>>()
@@ -103,75 +116,60 @@ class PreprocessingRunnable(
                     "Mean-Filter" -> {
 
                         acc.forEach { data ->
-                            filteredAccData.add(meanFilter(data))
+                            filteredAccData.add(meanFilter(data, windowsize))
                         }
 
-                        /*
-                        accXAxis = meanFilter(accXAxis)
-                        accYAxis = meanFilter(accYAxis)
-                        accZAxis = meanFilter(accZAxis)
-                        accTotal = meanFilter(accTotal)
-
-                         */
 
                         gyro.forEach { data ->
-                            filteredGyroData.add(meanFilter(data))
+                            filteredGyroData.add(meanFilter(data, windowsize))
                         }
 
                     }
                     "Median-Filter" -> {
+
                         acc.forEach { data ->
-                            filteredAccData.add(medianFilter(data))
+                            filteredAccData.add(medianFilter(data, windowsize))
                         }
 
                         gyro.forEach { data ->
-                            filteredGyroData.add(medianFilter(data))
+                            filteredGyroData.add(medianFilter(data, windowsize))
                         }
-                    }c
+                    }
                     "Butterworth-Filter" -> {
+
                         acc.forEach { data ->
-                            filteredAccData.add(butterworthFilter(data))
+                            filteredAccData.add(butterworthFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq))
                         }
 
                         gyro.forEach { data ->
-                            filteredGyroData.add(butterworthFilter(data))
+                            filteredGyroData.add(butterworthFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq))
                         }
                     }
                     "Bessel-Filter" -> {
                         acc.forEach { data ->
-                            filteredAccData.add(besselFilter(data))
+                            filteredAccData.add(besselFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq))
                         }
 
                         gyro.forEach { data ->
-                            filteredGyroData.add(besselFilter(data))
+                            filteredGyroData.add(besselFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq))
                         }
                     }
                     "ChebyshevI-Filter" -> {
                         acc.forEach { data ->
-                            filteredAccData.add(chebyshevIFilter(data))
+                            filteredAccData.add(chebyshevIFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq, ripple))
                         }
 
                         gyro.forEach { data ->
-                            filteredGyroData.add(chebyshevIFilter(data))
+                            filteredGyroData.add(chebyshevIFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq, ripple))
                         }
                     }
                     "ChebyshevII-Filter" -> {
                         acc.forEach { data ->
-                            filteredAccData.add(chebyshevIIFilter(data))
+                            filteredAccData.add(chebyshevIIFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq, ripple))
                         }
 
                         gyro.forEach { data ->
-                            filteredGyroData.add(chebyshevIIFilter(data))
-                        }
-                    }
-                    "Kalman-Filter" -> {
-
-                        acc.forEach { data ->
-                            filteredAccData.add(kalmanFilter(data))
-                        }
-
-                        gyro.forEach { data ->
-                            filteredGyroData.add(kalmanFilter(data))
+                            filteredGyroData.add(chebyshevIIFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq, ripple))
                         }
                     }
                     else -> {
@@ -183,32 +181,24 @@ class PreprocessingRunnable(
                 gyro = filteredGyroData
             }
 
-            //peakDetection
-            var detectedAccPeaks = DetectedPeaks()
-            var detectedGyroPeaks = DetectedPeaks()
-
-            //todo if peak detection then get Acc/Gyro Peaks and safe the timestamps in respective DetectedPeaks
-            //todo: evtl unterschiedliche PeakDetection Funktionen zur auswahl stellen
 
 
 
             //safe the preprocessed Data in an PreprocessedSensorData object
             var accData = PreprocessedSensorData(
-                accXAxis,
-                accYAxis,
-                accZAxis,
-                accTotal,
-                timestamps,
-                detectedAccPeaks
+                acc[0],
+                acc[1],
+                acc[2],
+                acc[3],
+                timestamps
             )
 
             var gyroData = PreprocessedSensorData(
-                gyroXAxis,
-                gyroYAxis,
-                gyroZAxis,
-                gyroTotal,
-                timestamps,
-                detectedGyroPeaks
+                gyro[0],
+                gyro[1],
+                gyro[2],
+                gyro[3],
+                timestamps
             )
 
 
@@ -219,7 +209,6 @@ class PreprocessingRunnable(
                 accData,
                 gyroData
             )
-
 
             //add the ExtremityData to the ExtremityData Array
             preprocessedDataArray.add(preprocessedData)
@@ -334,8 +323,7 @@ class PreprocessingRunnable(
         }
 
 
-
-        var devideRange = 1
+        var devideRange: Int
 
         if (signed){
             devideRange = 2
@@ -426,49 +414,292 @@ class PreprocessingRunnable(
      * filters
      */
 
-    private fun meanFilter(data: ArrayList<Double>):ArrayList<Double>{
-        //todo: implement
-        return data
+    private fun meanFilter(data: ArrayList<Double>, n: Int):ArrayList<Double>{
+
+        Log.i("Mean", "!")
+
+        var filteredData = ArrayList<Double>()
+
+        var i = 0
+
+        while (i<data.size){
+            var mean = 0.0
+
+            var j = i
+            var sum = 0.0
+            var noOfElement = 1 //there is at least the element itself in the list
+
+            //get the n values in front of i
+            if (j-n < 0){
+                j=0
+            } else {
+                j-=n
+            }
+
+            while (j<i){
+              sum+=data[j]
+              noOfElement +=1
+              j++
+            }
+
+            //get the n values behind i
+            j = i
+
+            if(j+n>=data.size){
+                j=data.size-1
+            } else {
+                j+=n
+            }
+
+            while (j>i){
+                sum+=data[j]
+                noOfElement +=1
+                j--
+            }
+
+            mean = sum/noOfElement
+
+            i++
+            filteredData.add(mean)
+        }
+        return filteredData
     }
 
-    private fun medianFilter(data: ArrayList<Double>): ArrayList<Double> {
-        //todo: implement
-        return data
+
+    private fun medianFilter(data: ArrayList<Double>, n: Int): ArrayList<Double> {
+
+        Log.i("Median", "!")
+        var filteredData = ArrayList<Double>()
+
+        var i = 0
+
+        while (i<data.size){
+            var median = 0.0
+
+            var j = i
+            var elements = ArrayList<Double>()
+            var noOfElement = 1 //there is at least the element itself in the list
+
+            //get the n values in front of i
+            if (j-n < 0){
+                j=0
+            } else {
+                j-=n
+            }
+
+            while (j<i){
+                elements.add(data[j])
+                noOfElement +=1
+                j++
+            }
+
+            //get the n values behind i
+            j = i
+
+            if(j+n>=data.size){
+                j=data.size-1
+            } else {
+                j+=n
+            }
+
+            while (j>i){
+                elements.add(data[j])
+                noOfElement +=1
+                j--
+            }
+
+            elements.sort()
+
+
+            if (noOfElement%2!=0){
+                median = elements[noOfElement/2]
+            }else{
+                var o = elements[(noOfElement/2)-1]
+                var l = elements[noOfElement/2]
+
+                median = (o+l)/2
+            }
+
+            i++
+            filteredData.add(median)
+        }
+        return filteredData
     }
 
-    private fun kalmanFilter(data: ArrayList<Double>): ArrayList<Double> {
-        //todo: implement
-        return data
+
+    private fun butterworthFilter(data: ArrayList<Double>, samplingRate: Double, order: Int, cutOffFreq: Double, centerFreq:Double, widthFreq:Double): ArrayList<Double> {
+
+        var whichFilter = sharedPrefs.getString("iirfilters", "none")
+
+        var butterworth = Butterworth()
+        Log.i("Butterworth", "!")
+
+        var filteredData = ArrayList<Double>()
+        when(whichFilter){
+            "Lowpass" -> {
+                Log.i("Butterworth", "Lowpass")
+                butterworth.lowPass(order, samplingRate, cutOffFreq)
+            }
+
+            "Highpass" -> {
+                Log.i("Butterworth", "Highpass")
+                butterworth.highPass(order, samplingRate, cutOffFreq)
+            }
+
+            "Bandpass" -> {
+                Log.i("Butterworth", "Bandpass")
+                butterworth.bandPass(order, samplingRate, centerFreq, widthFreq)
+            }
+
+            "Bandstop" -> {
+                Log.i("Butterworth", "Bandstop")
+                butterworth.bandStop(order, samplingRate, centerFreq, widthFreq)
+            }
+
+            else -> {
+                //do nothing
+            }
+        }
+
+        data.forEach { d ->
+            var v = butterworth.filter(d)
+            filteredData.add(v)
+        }
+        return filteredData
     }
 
-    private fun butterworthFilter(data: ArrayList<Double>): ArrayList<Double> {
-        //todo: implement and decide which filters (low, high bandpass, bandstop) see https://github.com/berndporr/iirj
-        val butterworth = Butterworth()
+    private fun besselFilter(data: ArrayList<Double>, samplingRate: Double, order: Int, cutOffFreq: Double, centerFreq:Double, widthFreq:Double): ArrayList<Double> {
 
-        return data
+
+        var whichFilter = sharedPrefs.getString("iirfilters", "none")
+
+        Log.i("Bessel", "!")
+
+        var bessel = Bessel()
+
+        var filteredData = ArrayList<Double>()
+        when(whichFilter){
+            "Lowpass" -> {
+                bessel.lowPass(order, samplingRate, cutOffFreq)
+                Log.i("Bessel", "Lowpass")
+            }
+
+            "Highpass" -> {
+                bessel.highPass(order, samplingRate, cutOffFreq)
+                Log.i("Bessel", "Highpass")
+            }
+
+            "Bandpass" -> {
+                bessel.bandPass(order, samplingRate, centerFreq, widthFreq)
+                Log.i("Bessel", "Bandpass")
+            }
+
+            "Bandstop" -> {
+                bessel.bandStop(order, samplingRate, centerFreq, widthFreq)
+                Log.i("Bessel", "Bandstop")
+            }
+
+            else -> {
+                //do nothing
+            }
+        }
+
+        data.forEach { d ->
+            var v = bessel.filter(d)
+            filteredData.add(v)
+        }
+        return filteredData
+
     }
 
-    private fun besselFilter(data: ArrayList<Double>): ArrayList<Double> {
-        //todo: implement and decide which filters (low, high bandpass, bandstop) see https://github.com/berndporr/iirj
+    private fun chebyshevIFilter(data: ArrayList<Double>, samplingRate: Double, order: Int, cutOffFreq: Double, centerFreq:Double, widthFreq:Double, ripple:Double): ArrayList<Double> {
 
-        val bessel = Bessel()
+        var whichFilter = sharedPrefs.getString("iirfilters", "none")
 
-        return data
+        Log.i("CH", "!")
+
+        var ch = ChebyshevI()
+
+        var filteredData = ArrayList<Double>()
+        when(whichFilter){
+            "Lowpass" -> {
+                ch.lowPass(order, samplingRate, cutOffFreq, ripple)
+                Log.i("CH", "Lowpass")
+            }
+
+            "Highpass" -> {
+                ch.highPass(order, samplingRate, cutOffFreq, ripple)
+                Log.i("CH", "Highpass")
+            }
+
+            "Bandpass" -> {
+                ch.bandPass(order, samplingRate, centerFreq, widthFreq, ripple)
+                Log.i("CH", "Bandpass")
+            }
+
+            "Bandstop" -> {
+                ch.bandStop(order, samplingRate, centerFreq, widthFreq, ripple)
+
+                Log.i("CH", "Bandstop")
+            }
+
+            else -> {
+                //do nothing
+            }
+        }
+
+        data.forEach { d ->
+            var v = ch.filter(d)
+            filteredData.add(v)
+        }
+        return filteredData
+
     }
 
-    private fun chebyshevIFilter(data: ArrayList<Double>): ArrayList<Double> {
-        //todo: implement and decide which filters (low, high bandpass, bandstop) see https://github.com/berndporr/iirj
-        val ch = ChebyshevI()
+    private fun chebyshevIIFilter(data: ArrayList<Double>, samplingRate: Double, order: Int, cutOffFreq: Double, centerFreq:Double, widthFreq:Double, ripple:Double): ArrayList<Double> {
+        var whichFilter = sharedPrefs.getString("iirfilters", "none")
 
-        return data
+        Log.i("CH2", "!")
+
+        var ch2 = ChebyshevII()
+
+        var filteredData = ArrayList<Double>()
+        when(whichFilter){
+            "Lowpass" -> {
+                ch2.lowPass(order, samplingRate, cutOffFreq, ripple)
+                Log.i("CH2", "Lowpass")
+            }
+
+            "Highpass" -> {
+                ch2.highPass(order, samplingRate, cutOffFreq, ripple)
+                Log.i("CH2", "Highpass")
+            }
+
+            "Bandpass" -> {
+                ch2.bandPass(order, samplingRate, centerFreq, widthFreq, ripple)
+                Log.i("CH2", "Bandpass")
+            }
+
+            "Bandstop" -> {
+                ch2.bandStop(order, samplingRate, centerFreq, widthFreq, ripple)
+
+                Log.i("CH2", "Bandstop")
+            }
+
+            else -> {
+                //do nothing
+            }
+        }
+
+        data.forEach { d ->
+            var v = ch2.filter(d)
+            filteredData.add(v)
+        }
+        return filteredData
+
     }
 
-    private fun chebyshevIIFilter(data: ArrayList<Double>): ArrayList<Double> {
-        //todo: implement and decide which filters (low, high bandpass, bandstop) see https://github.com/berndporr/iirj
-        val ch2 = ChebyshevII()
 
-        return data
-    }
-
+    //todo Debuggen (schauen ob die in der Liste ausgewählten Filter auch gestartet werden
 
 }

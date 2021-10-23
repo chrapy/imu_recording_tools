@@ -35,23 +35,17 @@
         android:key="filters"
         android:title="Filters"
         android:dependency="useFilters"/>
+
+    <ListPreference
+        android:defaultValue="false"
+        android:entries="@array/iirfilters"
+        android:entryValues="@array/iirfilters"
+        android:key="iirfilters"
+        android:title="IIR-Filters"
+        android:dependency="useFilters"/>
+
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="Peak Detection">
-        <SwitchPreferenceCompat
-            app:key="usePeakDetection"
-            app:title="Use a Peak Detection"
-            app:summaryOn="Choose an algorithm below"
-            app:defaultValue="false"
-            android:dependency="enablePreprocessing"/>
-        <ListPreference
-            android:defaultValue="false"
-            android:entries="@array/filters"
-            android:entryValues="@array/filters"
-            android:key="filters"
-            android:title="Filters"
-            android:dependency="useFilters"/>
-    </PreferenceCategory>
 
     <PreferenceCategory app:title="Meaningful Units">
 
@@ -116,6 +110,5 @@
             android:dependency="convertToMU"
             />
     </PreferenceCategory>
-
 
 </PreferenceScreen>

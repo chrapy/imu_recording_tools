@@ -50,7 +50,13 @@
         <item>Bandpass-Filter</item>
         <item>Lowpass-Filter</item>
         <item>Highpass-Filter</item>
-        <item>Kalman-Filter</item>
+    </string-array>
+    <string-array name="iirfilters">
+        <item>Butterworth</item>
+        <item>Bessel</item>
+        <item>Chebyshev Type I</item>
+        <item>Chebyshev Type II</item>
+
     </string-array>
     <!-- Preference Titles -->
     <string name="recording_header">Recording</string>

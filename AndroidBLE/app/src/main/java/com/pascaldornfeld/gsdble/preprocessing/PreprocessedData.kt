@@ -34,14 +34,5 @@ data class PreprocessedSensorData(
     val yAxisData: ArrayList<Double> = ArrayList(),
     val zAxisData: ArrayList<Double> = ArrayList(),
     val totalVector: ArrayList<Double> = ArrayList(),
-    val timeStamp: ArrayList<Long> = ArrayList(),
-    val detectedPeaks: DetectedPeaks = DetectedPeaks()
-)
-
-data class DetectedPeaks(
-    val xPeaks: ArrayList<Short> = ArrayList(),
-    val yPeaks: ArrayList<Short> = ArrayList(),
-    val zPeaks: ArrayList<Short> = ArrayList(),
-    val totalVectorPeaks: ArrayList<Short> = ArrayList()
-
+    val timeStamp: ArrayList<Long> = ArrayList()
 )
