@@ -21,30 +21,7 @@
         app:summaryOn="Data with equal timestamp are equally distributed inbetween the timestep"
         android:dependency="enablePreprocessing"/>
 
-    <PreferenceCategory app:title="Filters">
-        <SwitchPreferenceCompat
-            app:key="useFilters"
-            app:title="Use a filter"
-            app:summaryOn="Choose a filter below"
-            app:defaultValue="false"
-            android:dependency="enablePreprocessing"/>
-    <ListPreference
-        android:defaultValue="false"
-        android:entries="@array/filters"
-        android:entryValues="@array/filters"
-        android:key="filters"
-        android:title="Filters"
-        android:dependency="useFilters"/>
 
-    <ListPreference
-        android:defaultValue="false"
-        android:entries="@array/iirfilters"
-        android:entryValues="@array/iirfilters"
-        android:key="iirfilters"
-        android:title="IIR-Filters"
-        android:dependency="useFilters"/>
-
-    </PreferenceCategory>
 
 
     <PreferenceCategory app:title="Meaningful Units">
@@ -109,6 +86,77 @@
             android:summaryOff="No"
             android:dependency="convertToMU"
             />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Filters">
+        <SwitchPreferenceCompat
+            app:key="useFilters"
+            app:title="Use a filter"
+            app:summaryOn="Choose a filter below"
+            app:defaultValue="false"
+            android:dependency="enablePreprocessing"/>
+        <ListPreference
+            android:defaultValue="false"
+            android:entries="@array/filters"
+            android:entryValues="@array/filters"
+            android:key="filters"
+            android:title="Filters"
+            android:dependency="useFilters"/>
+
+        <ListPreference
+            android:defaultValue="false"
+            android:entries="@array/iirfilters"
+            android:entryValues="@array/iirfilters"
+            android:key="iirfilters"
+            android:title="IIR-Filters"
+            android:dependency="useFilters"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="Filter Parameters">
+        <EditTextPreference
+            app:key="windowsize"
+            android:defaultValue="5"
+            app:title="Window Size"
+            app:useSimpleSummaryProvider="true"
+            android:dependency="useFilters"
+            />
+        <EditTextPreference
+            app:key="order"
+            android:defaultValue="1"
+            app:title="Order"
+            app:useSimpleSummaryProvider="true"
+            android:dependency="useFilters"
+            />
+        <EditTextPreference
+            app:key="centerFreq"
+            android:defaultValue="1.0"
+            app:title="Center Frequency"
+            app:useSimpleSummaryProvider="true"
+            android:dependency="useFilters"
+            />
+        <EditTextPreference
+            app:key="widthFreq"
+            android:defaultValue="1.0"
+            app:title="Width Frequency"
+            app:useSimpleSummaryProvider="true"
+            android:dependency="useFilters"
+            />
+        <EditTextPreference
+            app:key="cutOffFreq"
+            android:defaultValue="1.0"
+            app:title="Cutoff Frequency"
+            app:useSimpleSummaryProvider="true"
+            android:dependency="useFilters"
+            />
+        <EditTextPreference
+            app:key="ripple"
+            android:defaultValue="1.0"
+            app:title="Ripple"
+            app:useSimpleSummaryProvider="true"
+            android:dependency="useFilters"
+            />
+
     </PreferenceCategory>
 
 </PreferenceScreen>
