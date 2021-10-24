@@ -2,6 +2,8 @@ package com.pascaldornfeld.gsdble.preprocessing
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import com.pascaldornfeld.gsdble.file_dumping.FileOperations
@@ -54,6 +56,7 @@ class PreprocessingRunnable(
 
             var acc = arrayListOf<ArrayList<Double>>(accXAxis, accYAxis, accZAxis, accTotal)
 
+
             //gyroscope
             var gyroXAxis = arrayListShortToDouble(it.gyroData.xAxisData)
             var gyroYAxis = arrayListShortToDouble(it.gyroData.yAxisData)
@@ -84,7 +87,6 @@ class PreprocessingRunnable(
             }
 
 
-
             //option to split timeStamps up (in equally big parts) if multiple datas have the same timestamp
             if(sharedPrefs.getBoolean("splitSameTS", false)) {
                 var splittedTS = splitTS(timestamps)
@@ -105,11 +107,12 @@ class PreprocessingRunnable(
                         (sharedPrefs!!.getString("windowsize", "0")
                             .toInt())/2
                 } catch (ex: NumberFormatException) {
-                    Toast.makeText(
-                        context,
-                        "Windowsize must be an Integer & is set to 0!",
-                        Toast.LENGTH_LONG
-                    ).show()
+
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(context, "Windowsize must be an Integer & is set to 0!", Toast.LENGTH_SHORT).show()
+                    }
+
+
                     sharedPrefs.edit().putString("windowsize", "0").apply()
                 }
 
@@ -119,11 +122,12 @@ class PreprocessingRunnable(
                         sharedPrefs!!.getString("order", "1")
                             .toInt()
                 } catch (ex: NumberFormatException) {
-                    Toast.makeText(
-                        context,
-                        "Order must be an Integer & is set to 0!",
-                        Toast.LENGTH_LONG
-                    ).show()
+
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(context, "Order must be an Integer & is set to 0!", Toast.LENGTH_SHORT).show()
+                    }
+
+
                     sharedPrefs.edit().putString("order", "0").apply()
                 }
 
@@ -137,11 +141,9 @@ class PreprocessingRunnable(
                     //todo checken ob das to Double klappt!!!
                     Log.e("toDouble", centerFreq.toString())
                 } catch (ex: NumberFormatException) {
-                    Toast.makeText(
-                        context,
-                        "The center frequency must be a Double & is set to 1.0!",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(context, "The center frequency must be a Double & is set to 1.0!", Toast.LENGTH_SHORT).show()
+                    }
                     sharedPrefs.edit().putString("centerFreq", "1.0").apply()
                 }
 
@@ -153,11 +155,11 @@ class PreprocessingRunnable(
                             .toDouble()
 
                 } catch (ex: NumberFormatException) {
-                    Toast.makeText(
-                        context,
-                        "The width frequency must be a Double & is set to 1.0!",
-                        Toast.LENGTH_LONG
-                    ).show()
+
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(context, "The width frequency must be a Double & is set to 1.0!", Toast.LENGTH_SHORT).show()
+                    }
+
                     sharedPrefs.edit().putString("widthFreq", "1.0").apply()
                 }
 
@@ -169,11 +171,12 @@ class PreprocessingRunnable(
                             .toDouble()
 
                 } catch (ex: NumberFormatException) {
-                    Toast.makeText(
-                        context,
-                        "The cutoff frequency must be a Double & is set to 1.0!",
-                        Toast.LENGTH_LONG
-                    ).show()
+
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(context, "The cutoff frequency must be a Double & is set to 1.0!", Toast.LENGTH_SHORT).show()
+                    }
+
+
                     sharedPrefs.edit().putString("cutOffFreq", "1.0").apply()
                 }
 
@@ -186,11 +189,11 @@ class PreprocessingRunnable(
                             .toDouble()
 
                 } catch (ex: NumberFormatException) {
-                    Toast.makeText(
-                        context,
-                        "Ripple must be a Double & is set to 1.0!",
-                        Toast.LENGTH_LONG
-                    ).show()
+
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(context, "Ripple must be a Double & is set to 1.0!", Toast.LENGTH_SHORT).show()
+                    }
+
                     sharedPrefs.edit().putString("ripple", "1.0").apply()
                 }
 
@@ -260,7 +263,8 @@ class PreprocessingRunnable(
                         }
                     }
                     else -> {
-                        //do nothing
+                        filteredAccData = acc
+                        filteredGyroData = gyro
                     }
                 }
 
@@ -271,6 +275,7 @@ class PreprocessingRunnable(
 
 
 
+            Log.i("Acc: ", acc.toString())
             //safe the preprocessed Data in an PreprocessedSensorData object
             var accData = PreprocessedSensorData(
                 acc[0],
@@ -280,6 +285,7 @@ class PreprocessingRunnable(
                 timestamps
             )
 
+            Log.i("Gyro: ", gyro.toString())
             var gyroData = PreprocessedSensorData(
                 gyro[0],
                 gyro[1],
@@ -350,11 +356,12 @@ class PreprocessingRunnable(
                     sharedPrefs.getString("AccOutputSize", "16")
                         .toInt()
             } catch (ex: NumberFormatException) {
-                Toast.makeText(
-                    context,
-                    "Output size must be a number & is set to 16!",
-                    Toast.LENGTH_LONG
-                ).show()
+
+
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(context, "Output size must be a number & is set to 16!", Toast.LENGTH_SHORT).show()
+                }
+
                 sharedPrefs.edit().putString("AccOutputSize", "16").apply()
             }
 
@@ -364,11 +371,12 @@ class PreprocessingRunnable(
                     sharedPrefs.getString("AccRange", "16")
                         .toInt()
             } catch (ex: NumberFormatException) {
-                Toast.makeText(
-                    context,
-                    "Range must be a number & is set to 16!",
-                    Toast.LENGTH_LONG
-                ).show()
+
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(context, "Range must be a number & is set to 16!", Toast.LENGTH_SHORT).show()
+                }
+
+
                 sharedPrefs.edit().putString("AccRange", "16").apply()
             }
 
@@ -382,11 +390,11 @@ class PreprocessingRunnable(
                         sharedPrefs.getString("GyroOutputSize", "16")
                             .toInt()
                 } catch (ex: NumberFormatException) {
-                    Toast.makeText(
-                        context,
-                        "Output size must be a number & is set to 16!",
-                        Toast.LENGTH_LONG
-                    ).show()
+
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(context, "Output size must be a number & is set to 16!", Toast.LENGTH_SHORT).show()
+                    }
+
                     sharedPrefs.edit().putString("GyroOutputSize", "16").apply()
                 }
 
@@ -396,11 +404,12 @@ class PreprocessingRunnable(
                         sharedPrefs.getString("GyroRange", "2000")
                             .toInt()
                 } catch (ex: NumberFormatException) {
-                    Toast.makeText(
-                        context,
-                        "Range must be a number & is set to 2000!",
-                        Toast.LENGTH_LONG
-                    ).show()
+
+                    Handler(Looper.getMainLooper()).post {
+                        Toast.makeText(context, "Range must be a number & is set to 2000!", Toast.LENGTH_SHORT).show()
+                    }
+
+
                     sharedPrefs.edit().putString("GyroRange", "2000").apply()
                 }
 
@@ -777,7 +786,7 @@ class PreprocessingRunnable(
             }
 
             else -> {
-                //do nothing
+                return data
             }
         }
 
