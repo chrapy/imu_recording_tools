@@ -138,8 +138,6 @@ class PreprocessingRunnable(
                         sharedPrefs!!.getString("centerFreq", "1.0")
                             .toDouble()
 
-                    //todo checken ob das to Double klappt!!!
-                    Log.e("toDouble", centerFreq.toString())
                 } catch (ex: NumberFormatException) {
                     Handler(Looper.getMainLooper()).post {
                         Toast.makeText(context, "The center frequency must be a Double & is set to 1.0!", Toast.LENGTH_SHORT).show()
@@ -203,7 +201,7 @@ class PreprocessingRunnable(
                 var filteredGyroData = arrayListOf<ArrayList<Double>>()
 
                 when(useThisFilter){
-                    "Mean-Filter" -> {
+                    "Mean" -> {
 
                         acc.forEach { data ->
                             filteredAccData.add(meanFilter(data, windowsize))
@@ -215,7 +213,7 @@ class PreprocessingRunnable(
                         }
 
                     }
-                    "Median-Filter" -> {
+                    "Median" -> {
 
                         acc.forEach { data ->
                             filteredAccData.add(medianFilter(data, windowsize))
@@ -225,8 +223,10 @@ class PreprocessingRunnable(
                             filteredGyroData.add(medianFilter(data, windowsize))
                         }
                     }
-                    "Butterworth-Filter" -> {
+                    "Butterworth" -> {
 
+
+                        Log.e("Rein:", "Butterworth")
                         acc.forEach { data ->
                             filteredAccData.add(butterworthFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq))
                         }
@@ -235,7 +235,9 @@ class PreprocessingRunnable(
                             filteredGyroData.add(butterworthFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq))
                         }
                     }
-                    "Bessel-Filter" -> {
+                    "Bessel" -> {
+
+                        Log.e("Rein:", "Bessel")
                         acc.forEach { data ->
                             filteredAccData.add(besselFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq))
                         }
@@ -244,7 +246,9 @@ class PreprocessingRunnable(
                             filteredGyroData.add(besselFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq))
                         }
                     }
-                    "ChebyshevI-Filter" -> {
+                    "Chebyshev Type I" -> {
+
+                        Log.e("Rein:", "CH1")
                         acc.forEach { data ->
                             filteredAccData.add(chebyshevIFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq, ripple))
                         }
@@ -253,7 +257,9 @@ class PreprocessingRunnable(
                             filteredGyroData.add(chebyshevIFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq, ripple))
                         }
                     }
-                    "ChebyshevII-Filter" -> {
+                    "Chebyshev Type II" -> {
+
+                        Log.e("Rein:", "CH2")
                         acc.forEach { data ->
                             filteredAccData.add(chebyshevIIFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq, ripple))
                         }

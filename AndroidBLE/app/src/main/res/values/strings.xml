@@ -44,19 +44,18 @@
         <item>@string/customLabel</item>
     </string-array>
     <string-array name="filters">
-        <item>Mean-Filter</item>
-        <item>Median-Filter</item>
-        <item>Bandstop-Filter</item>
-        <item>Bandpass-Filter</item>
-        <item>Lowpass-Filter</item>
-        <item>Highpass-Filter</item>
-    </string-array>
-    <string-array name="iirfilters">
+        <item>Mean</item>
+        <item>Median</item>
         <item>Butterworth</item>
         <item>Bessel</item>
         <item>Chebyshev Type I</item>
         <item>Chebyshev Type II</item>
-
+    </string-array>
+    <string-array name="iirfilters">
+        <item>Bandstop</item>
+        <item>Bandpass</item>
+        <item>Lowpass</item>
+        <item>Highpass</item>
     </string-array>
     <!-- Preference Titles -->
     <string name="recording_header">Recording</string>
