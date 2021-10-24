@@ -225,8 +225,6 @@ class PreprocessingRunnable(
                     }
                     "Butterworth" -> {
 
-
-                        Log.e("Rein:", "Butterworth")
                         acc.forEach { data ->
                             filteredAccData.add(butterworthFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq))
                         }
@@ -237,7 +235,6 @@ class PreprocessingRunnable(
                     }
                     "Bessel" -> {
 
-                        Log.e("Rein:", "Bessel")
                         acc.forEach { data ->
                             filteredAccData.add(besselFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq))
                         }
@@ -248,7 +245,7 @@ class PreprocessingRunnable(
                     }
                     "Chebyshev Type I" -> {
 
-                        Log.e("Rein:", "CH1")
+
                         acc.forEach { data ->
                             filteredAccData.add(chebyshevIFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq, ripple))
                         }
@@ -259,7 +256,7 @@ class PreprocessingRunnable(
                     }
                     "Chebyshev Type II" -> {
 
-                        Log.e("Rein:", "CH2")
+
                         acc.forEach { data ->
                             filteredAccData.add(chebyshevIIFilter(data, samplingRate, order, cutOffFreq, centerFreq, widthFreq, ripple))
                         }
@@ -279,9 +276,6 @@ class PreprocessingRunnable(
             }
 
 
-
-
-            Log.i("Acc: ", acc.toString())
             //safe the preprocessed Data in an PreprocessedSensorData object
             var accData = PreprocessedSensorData(
                 acc[0],
@@ -291,7 +285,7 @@ class PreprocessingRunnable(
                 timestamps
             )
 
-            Log.i("Gyro: ", gyro.toString())
+
             var gyroData = PreprocessedSensorData(
                 gyro[0],
                 gyro[1],
@@ -518,7 +512,6 @@ class PreprocessingRunnable(
 
     private fun meanFilter(data: ArrayList<Double>, n: Int):ArrayList<Double>{
 
-        Log.i("Mean", "!")
 
         var filteredData = ArrayList<Double>()
 
@@ -573,7 +566,6 @@ class PreprocessingRunnable(
 
     private fun medianFilter(data: ArrayList<Double>, n: Int): ArrayList<Double> {
 
-        Log.i("Median", "!")
         var filteredData = ArrayList<Double>()
 
         var i = 0
@@ -637,27 +629,22 @@ class PreprocessingRunnable(
         var whichFilter = sharedPrefs.getString("iirfilters", "none")
 
         var butterworth = Butterworth()
-        Log.i("Butterworth", "!")
 
         var filteredData = ArrayList<Double>()
         when(whichFilter){
             "Lowpass" -> {
-                Log.i("Butterworth", "Lowpass")
                 butterworth.lowPass(order, samplingRate, cutOffFreq)
             }
 
             "Highpass" -> {
-                Log.i("Butterworth", "Highpass")
                 butterworth.highPass(order, samplingRate, cutOffFreq)
             }
 
             "Bandpass" -> {
-                Log.i("Butterworth", "Bandpass")
                 butterworth.bandPass(order, samplingRate, centerFreq, widthFreq)
             }
 
             "Bandstop" -> {
-                Log.i("Butterworth", "Bandstop")
                 butterworth.bandStop(order, samplingRate, centerFreq, widthFreq)
             }
 
@@ -678,7 +665,6 @@ class PreprocessingRunnable(
 
         var whichFilter = sharedPrefs.getString("iirfilters", "none")
 
-        Log.i("Bessel", "!")
 
         var bessel = Bessel()
 
@@ -686,22 +672,18 @@ class PreprocessingRunnable(
         when(whichFilter){
             "Lowpass" -> {
                 bessel.lowPass(order, samplingRate, cutOffFreq)
-                Log.i("Bessel", "Lowpass")
             }
 
             "Highpass" -> {
                 bessel.highPass(order, samplingRate, cutOffFreq)
-                Log.i("Bessel", "Highpass")
             }
 
             "Bandpass" -> {
                 bessel.bandPass(order, samplingRate, centerFreq, widthFreq)
-                Log.i("Bessel", "Bandpass")
             }
 
             "Bandstop" -> {
                 bessel.bandStop(order, samplingRate, centerFreq, widthFreq)
-                Log.i("Bessel", "Bandstop")
             }
 
             else -> {
@@ -721,7 +703,6 @@ class PreprocessingRunnable(
 
         var whichFilter = sharedPrefs.getString("iirfilters", "none")
 
-        Log.i("CH", "!")
 
         var ch = ChebyshevI()
 
@@ -729,23 +710,18 @@ class PreprocessingRunnable(
         when(whichFilter){
             "Lowpass" -> {
                 ch.lowPass(order, samplingRate, cutOffFreq, ripple)
-                Log.i("CH", "Lowpass")
             }
 
             "Highpass" -> {
                 ch.highPass(order, samplingRate, cutOffFreq, ripple)
-                Log.i("CH", "Highpass")
             }
 
             "Bandpass" -> {
                 ch.bandPass(order, samplingRate, centerFreq, widthFreq, ripple)
-                Log.i("CH", "Bandpass")
             }
 
             "Bandstop" -> {
                 ch.bandStop(order, samplingRate, centerFreq, widthFreq, ripple)
-
-                Log.i("CH", "Bandstop")
             }
 
             else -> {
@@ -764,7 +740,6 @@ class PreprocessingRunnable(
     private fun chebyshevIIFilter(data: ArrayList<Double>, samplingRate: Double, order: Int, cutOffFreq: Double, centerFreq:Double, widthFreq:Double, ripple:Double): ArrayList<Double> {
         var whichFilter = sharedPrefs.getString("iirfilters", "none")
 
-        Log.i("CH2", "!")
 
         var ch2 = ChebyshevII()
 
@@ -772,23 +747,19 @@ class PreprocessingRunnable(
         when(whichFilter){
             "Lowpass" -> {
                 ch2.lowPass(order, samplingRate, cutOffFreq, ripple)
-                Log.i("CH2", "Lowpass")
             }
 
             "Highpass" -> {
                 ch2.highPass(order, samplingRate, cutOffFreq, ripple)
-                Log.i("CH2", "Highpass")
             }
 
             "Bandpass" -> {
                 ch2.bandPass(order, samplingRate, centerFreq, widthFreq, ripple)
-                Log.i("CH2", "Bandpass")
             }
 
             "Bandstop" -> {
                 ch2.bandStop(order, samplingRate, centerFreq, widthFreq, ripple)
 
-                Log.i("CH2", "Bandstop")
             }
 
             else -> {
@@ -803,8 +774,5 @@ class PreprocessingRunnable(
         return filteredData
 
     }
-
-
-    //todo Debuggen (schauen ob die in der Liste ausgewählten Filter auch gestartet werden
 
 }

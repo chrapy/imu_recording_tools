@@ -233,7 +233,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
 
         // start the recording
-        vRecordButton.text = getString(R.string.stop)
+        vRecordButton.text = getString(R.string.stop)       //todo gui abhängigkeit
         isRecording = true
         recordingStartSystemTime = System.currentTimeMillis()
         val extremityDataArray = ArrayList<ExtremityData>()
@@ -301,6 +301,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
             markedTimeStamps = ArrayList<Long>()
 
+            //todo text --> GUI Abhängigkeit
             countDownText.text = ""
             vRecordButton.text = getString(R.string.start)
             isRecording = false
@@ -561,7 +562,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         builder.show()
     }
 
-    private fun endRecording() {
+    private fun endRecording() {        //todo evtl in safeRecording umbenennen
         // if not deactivated write recorder object into file
         if(!sharedPrefs.getBoolean("dontSafeRawData", false)){
             recorder?.let { FileOperations.writeGestureFile(it) }
