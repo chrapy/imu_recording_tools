@@ -255,13 +255,10 @@ class DeviceFragment : Fragment() {
 
 
     fun setBatterieLevel(level:Int):String{
-        Log.i("setBatLVL", level.toString())
 
         if(level>=0) {
-            Log.i("setBat", "Yes")
             return "Battery level:" + level.toString()
         } else {
-            Log.i("setBat", "NO")
             return "Battery level: -"
         }
     }

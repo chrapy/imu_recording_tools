@@ -8,3 +8,6 @@ App to receive and process the data.
 ### Folder structure:
 
 - AndroidBLE - Android App
+
+### The App module can be converted into a library module  to use the start/stop recording function and connecting the bluetooth devices as API
+- see: https://developer.android.com/studio/projects/android-library

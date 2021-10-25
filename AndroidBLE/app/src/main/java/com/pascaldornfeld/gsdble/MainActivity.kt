@@ -97,6 +97,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         // Initialize vibrator
         vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
+
         connectDialog = ScanDialogFragment().apply {
             initialize(
                 { bluetoothAdapter!!.bluetoothLeScanner },
@@ -199,7 +200,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         audio = AudioPlayer(this)
     }
 
-    private fun startRecording() {
+    //usable as api
+    fun startRecording() {
 
         connectedSensors = supportFragmentManager.fragments.filterIsInstance<DeviceFragment>().size
         deletedLastRec = false
@@ -207,12 +209,16 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         if(sharedPrefs.getBoolean("FixRecLen", false)) {
             stopCountDown = object : CountDownTimer(recordingAutostopDelay, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
-                    countDownText.text = getString(R.string.stopCountdownPrefix) +
-                            ((millisUntilFinished / 1000) + 1) +
-                            getString(R.string.secondPostfix)
-                    if (sharedPrefs.getBoolean("audioOutput", false)) {
-                        if (((millisUntilFinished / 1000) + 1)<=3){
-                            audio.speak(((millisUntilFinished / 1000) + 1).toString())
+                    if (::countDownText.isInitialized) {
+                        countDownText.text = getString(R.string.stopCountdownPrefix) +
+                                ((millisUntilFinished / 1000) + 1) +
+                                getString(R.string.secondPostfix)
+                        if (sharedPrefs.getBoolean("audioOutput", false)) {
+                            if (((millisUntilFinished / 1000) + 1) <= 3) {
+                                if(::audio.isInitialized) {
+                                    audio.speak(((millisUntilFinished / 1000) + 1).toString())
+                                }
+                            }
                         }
                     }
                 }
@@ -227,13 +233,24 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             stopCountDown?.start()
         }
         if (sharedPrefs.getBoolean("audioOutput", false)) {
-            audio.speak("Recording started")
+            if(::audio.isInitialized){
+                audio.speak("Recording started")
+            }
         }
-        vibrator.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE))
 
+        if(::vibrator.isInitialized){
+            vibrator.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE))
+        }
 
         // start the recording
-        vRecordButton.text = getString(R.string.stop)       //todo gui abhängigkeit
+
+        //if used as api there is a possibility vRecordButton does not exist (catch this case)
+        try {
+            vRecordButton.text = getString(R.string.stop)
+        } catch (e:Exception){
+            //do nothing
+        }
+
         isRecording = true
         recordingStartSystemTime = System.currentTimeMillis()
         val extremityDataArray = ArrayList<ExtremityData>()
@@ -266,7 +283,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         )
     }
 
-    private fun stopRecording() {
+    //usable as api
+    fun stopRecording() {
         if (sharedPrefs.getBoolean("PreRecTimer", false)) {
             startCountDown.cancel()
         }
@@ -301,10 +319,16 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
             markedTimeStamps = ArrayList<Long>()
 
-            //todo text --> GUI Abhängigkeit
-            countDownText.text = ""
-            vRecordButton.text = getString(R.string.start)
-            isRecording = false
+
+            //if used as api there is a possibility vRecordButton does not exist (catch this case)
+            try {
+                countDownText.text = ""
+                vRecordButton.text = getString(R.string.start)
+                isRecording = false
+            } catch (e:Exception) {
+                //do nothing
+            }
+
 
             // show dialog to add textual note to recording if desired
             if(sharedPrefs.getBoolean("addNotes", false)){
@@ -367,7 +391,10 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                     endRecording()
                 }
             }
-            vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
+
+            if (::vibrator.isInitialized){
+                vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
+            }
         }
 
 
@@ -562,7 +589,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         builder.show()
     }
 
-    private fun endRecording() {        //todo evtl in safeRecording umbenennen
+    private fun endRecording() {
         // if not deactivated write recorder object into file
         if(!sharedPrefs.getBoolean("dontSafeRawData", false)){
             recorder?.let { FileOperations.writeGestureFile(it) }
@@ -1070,8 +1097,6 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         myDB.updateDeviceTimeDrift(deviceMac, finalDrift.toString())
         myDB.close()
 
-        Log.i("Final_drift:", finalDrift.toString())
-
         Toast.makeText(this, "Sucessfully calculated drift!", Toast.LENGTH_LONG).show()
 
         stopCalculatingView()
@@ -1085,4 +1110,19 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
 
+    //connecting sensors is possible via api
+    fun connectionDialog(){
+        connectDialog = ScanDialogFragment().apply {
+            initialize(
+                { bluetoothAdapter!!.bluetoothLeScanner },
+                { checkSensorKnown(it) },
+                {
+                    supportFragmentManager.fragments
+                        .filterIsInstance<DeviceFragment>()
+                        .none { knownDevice -> (knownDevice.device().address == it.address) }
+                }
+            )
+        }
+        connectDialog.show(supportFragmentManager, null)
+    }
 }
