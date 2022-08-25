@@ -23,7 +23,7 @@
     <string name="ok">OK</string>
     <string name="defaultLabel">default_label</string>
     <string name="changeLabel">change label</string>
-
+    <string name="timer_zero">00:00:00</string>
 
     <string name="labelInputTitle">Enter Custom Label</string>
     <string name="customLabel">custom label</string>

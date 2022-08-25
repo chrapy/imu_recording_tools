@@ -2,6 +2,7 @@ package com.pascaldornfeld.gsdble.file_dumping
 
 import android.os.AsyncTask
 import android.os.Environment
+import android.util.Log
 import com.google.gson.GsonBuilder
 import com.pascaldornfeld.gsdble.preprocessing.PreprocessedData
 import java.io.BufferedWriter
@@ -35,12 +36,15 @@ object FileOperations {
             }.let { file: File ->
                 lastFile = file
                 // write file
+
+                Log.d("FILE_DUMP", "Gesture Dump Start")
                 FileWriter(file, false).use { fileWriter: FileWriter ->
                     BufferedWriter(fileWriter).use { bufferedWriter: BufferedWriter ->
                         bufferedWriter.write(gson.toJson(gestureData))
                         bufferedWriter.newLine()
                     }
                 }
+                Log.d("FILE_DUMP", "Gesture Dump End")
             }
 
         }
@@ -93,12 +97,14 @@ object FileOperations {
             }.let { file: File ->
                 lastFile = file
                 // write file
+                Log.d("FILE_DUMP", "Processed Gesture Dump Start")
                 FileWriter(file, false).use { fileWriter: FileWriter ->
                     BufferedWriter(fileWriter).use { bufferedWriter: BufferedWriter ->
                         bufferedWriter.write(gson.toJson(preprocessedData))
                         bufferedWriter.newLine()
                     }
                 }
+                Log.d("FILE_DUMP", "Processed Gesture Dump End")
             }
 
         }

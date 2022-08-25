@@ -12,7 +12,6 @@ import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.*
 import android.provider.Settings
-import android.provider.SyncStateContract.Helpers.set
 import android.text.InputType
 import android.util.Log
 import android.view.Menu
@@ -33,9 +32,9 @@ import com.pascaldornfeld.gsdble.database.MyDatabaseHelper
 import com.pascaldornfeld.gsdble.file_dumping.ExtremityData
 import com.pascaldornfeld.gsdble.file_dumping.FileOperations
 import com.pascaldornfeld.gsdble.file_dumping.GestureData
-import com.pascaldornfeld.gsdble.file_dumping.SensorData
 import com.pascaldornfeld.gsdble.preprocessing.PreprocessingRunnable
 import com.pascaldornfeld.gsdble.scan.ScanDialogFragment
+import com.pascaldornfeld.gsdble.utility.Timer
 import kotlinx.android.synthetic.main.main_activity.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -79,7 +78,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     //Preferences
     private lateinit var sharedPrefs : SharedPreferences
 
-
+    private lateinit var timer: Timer
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -198,6 +197,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             }
         }
         audio = AudioPlayer(this)
+
+        timer = Timer(findViewById(R.id.timer))
     }
 
     //usable as api
@@ -246,7 +247,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
         //if used as api there is a possibility vRecordButton does not exist (catch this case)
         try {
-            vRecordButton.text = getString(R.string.stop)
+            vRecordButton.background = getDrawable(R.drawable.circle_stop)
+            //vRecordButton.text = getString(R.string.stop)
         } catch (e:Exception){
             //do nothing
         }
@@ -281,6 +283,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             recLabel,
             this
         )
+        timer.start()
     }
 
     //usable as api
@@ -323,7 +326,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             //if used as api there is a possibility vRecordButton does not exist (catch this case)
             try {
                 countDownText.text = ""
-                vRecordButton.text = getString(R.string.start)
+                vRecordButton.background = getDrawable(R.drawable.circle_start)
+                //vRecordButton.text = getString(R.string.start)
                 isRecording = false
             } catch (e:Exception) {
                 //do nothing
@@ -397,7 +401,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             }
         }
 
-
+        timer.stop()
     }
 
     /**
