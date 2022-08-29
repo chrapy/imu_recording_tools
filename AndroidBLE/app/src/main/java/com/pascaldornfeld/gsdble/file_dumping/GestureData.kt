@@ -4,6 +4,8 @@ package com.pascaldornfeld.gsdble.file_dumping
 import android.annotation.SuppressLint
 import android.content.Context
 import android.provider.Settings
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -28,6 +30,12 @@ data class GestureData(
         label = label,
         deviceId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
     )
+
+    fun deepCopy() :GestureData {
+        val gson = GsonBuilder().create()
+        val tmp = gson.toJson(this)
+        return gson.fromJson(tmp, GestureData::class.java)
+    }
 }
 
 data class ExtremityData(

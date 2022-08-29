@@ -80,6 +80,11 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
     private lateinit var timer: Timer
 
+    private val periodicSaveHandler: Handler = Handler()
+    private lateinit var periodicSaveRunnable: Runnable
+    private lateinit var extremityDataArray: ArrayList<ExtremityData>
+    private var saveInterval: Long? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,7 +125,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                         stopCountDown?.cancel()
                     }
                     countDownText.text = ""
-                    vRecordButton.text = getString(R.string.start)
+                    //vRecordButton.text = getString(R.string.start)
+                    vRecordButton.background = getDrawable(R.drawable.circle_start)
                     isRecording = false
                     abortRenewRec = true
                     audio.speak("Stopped Recording Streak")
@@ -255,7 +261,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
         isRecording = true
         recordingStartSystemTime = System.currentTimeMillis()
-        val extremityDataArray = ArrayList<ExtremityData>()
+        extremityDataArray = ArrayList<ExtremityData>()
         supportFragmentManager.fragments
             .filterIsInstance<DeviceFragment>()
             .forEach {
@@ -283,6 +289,28 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             recLabel,
             this
         )
+        // Periodically save the current recording as a file and reset the recording
+        if (sharedPrefs.getBoolean("periodicSave", false)) {
+            saveInterval = try {
+                sharedPrefs.getString("periodicSaveInterval", "-1")
+                    .toLong() * 1000L
+            } catch (ex: NumberFormatException) {
+                Toast.makeText(
+                    this,
+                    "Save interval value must be a number. Not using auto-save.",
+                    Toast.LENGTH_LONG
+                ).show()
+                null
+            }
+            if (saveInterval!=null) {
+                periodicSaveRunnable = Runnable {
+                    automaticSaving()
+                    periodicSaveHandler.postDelayed(periodicSaveRunnable, saveInterval!!)
+                }
+                periodicSaveHandler.postDelayed(periodicSaveRunnable, saveInterval!!)
+            }
+        }
+
         timer.start()
     }
 
@@ -398,6 +426,14 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
 
             if (::vibrator.isInitialized){
                 vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE))
+            }
+        }
+
+        // Periodically save the current recording as a file and reset the recording
+        if (sharedPrefs.getBoolean("periodicSave", false)) {
+            // check for valid interval value
+            if (saveInterval != null) {
+                periodicSaveHandler.removeCallbacks(periodicSaveRunnable)
             }
         }
 
@@ -593,6 +629,48 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         builder.show()
     }
 
+    private fun automaticSaving() {
+        val t1 = System.currentTimeMillis()
+        recorder?.markedTimeStamps = markedTimeStamps
+        val rec = recorder?.deepCopy()
+
+        markedTimeStamps = ArrayList<Long>()
+        // if not deactivated write recorder object into file
+        if(!sharedPrefs.getBoolean("dontSafeRawData", false)){
+            rec?.let { FileOperations.writeGestureFile(it) }
+        }
+        if(sharedPrefs.getBoolean("enablePreprocessing", false)) {
+
+            val r: Runnable = PreprocessingRunnable(rec, sharedPrefs, this)
+            Thread(r).start()
+        }
+        resetRecordedData()
+        val t2 = System.currentTimeMillis()
+        Log.d("SAVING", "Automatic Saving took " + (t2 - t1) + "ms")
+    }
+
+    private fun resetRecordedData() {
+        recorder = null
+
+        // start the recording
+        recordingStartSystemTime = System.currentTimeMillis()
+        extremityDataArray = ArrayList<ExtremityData>()
+        supportFragmentManager.fragments
+            .filterIsInstance<DeviceFragment>()
+            .forEach {
+                val extremityData = ExtremityData()
+                DeviceViewModel.forDeviceFragment(it).extremityData = extremityData
+                extremityDataArray.add(extremityData)
+            }
+
+        recorder = GestureData(
+            extremityDataArray.toTypedArray(),
+            recLabel,
+            this
+        )
+
+    }
+
     private fun endRecording() {
         // if not deactivated write recorder object into file
         if(!sharedPrefs.getBoolean("dontSafeRawData", false)){
@@ -729,7 +807,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
      * With the renewRecording Options selected (in the settings menu) the recording will be renewed until stopped by the user
      */
     private fun renewRecording(){
-        vRecordButton.text = getString(R.string.stop)
+        //vRecordButton.text = getString(R.string.stop)
+        vRecordButton.background = getDrawable(R.drawable.circle_stop)
         renewRecording = true
         abortRenewRec = false
 

@@ -85,4 +85,21 @@
             app:summaryOff="Audio Off"/>
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="Periodically Save Recording">
+        <SwitchPreferenceCompat
+            app:key="periodicSave"
+            app:title="Periodically save the recording"
+            android:defaultValue="false"
+            app:summaryOn="On"
+            app:summaryOff="Off"
+            />
+        <EditTextPreference
+            app:dependency="periodicSave"
+            app:key="periodicSaveInterval"
+            android:defaultValue="120"
+            app:title="Periodic save interval (seconds)"
+            app:useSimpleSummaryProvider="true"
+            />
+    </PreferenceCategory>
+
 </PreferenceScreen>
