@@ -18,13 +18,17 @@ object FileOperations {
      * and save it in the user's directory in background.
      *
      * @param gestureData The class which contains all raw and meta data of the gesture
+     * @param subFolder Name of a subfolder to save the recording in. If null, save in default folder
      */
-    fun writeGestureFile(gestureData: GestureData) {
+    fun writeGestureFile(gestureData: GestureData, subFolder: String? = null) {
         AsyncTask.execute {
             // create filename
             synchronized(FileOperations) {
                 var fileNamePostfix = 2
-                val recordingName = gestureData.label.toString()  + gestureData.startTime.toString()
+                var recordingName = gestureData.label.toString()  + gestureData.startTime.toString()
+                if (subFolder != null) {
+                    recordingName = "$subFolder${File.separator}$recordingName"
+                }
                 var file = getFileFromPrefixAndCreateParent(recordingName)
                 while (file.exists()) {
                     file = getFileFromPrefixAndCreateParent(
@@ -79,13 +83,17 @@ object FileOperations {
      * and save it in the user's directory in background.
      *
      * @param preprocessedData The class which contains all preprocessed data of the gesture
+     * @param subFolder Name of a subfolder to save the recording in. If null, save in default folder
      */
-    fun writePreprocessedFile(preprocessedData: PreprocessedData) {
+    fun writePreprocessedFile(preprocessedData: PreprocessedData, subFolder: String? = null) {
         AsyncTask.execute {
             // create filename
             synchronized(FileOperations) {
                 var fileNamePostfix = 2
-                val recordingName = preprocessedData.label.toString()  + preprocessedData.startTime.toString() + "_PreProcessed"
+                var recordingName = preprocessedData.label.toString()  + preprocessedData.startTime.toString() + "_PreProcessed"
+                if (subFolder != null) {
+                    recordingName = "$subFolder${File.separator}$recordingName"
+                }
                 var file = getFileFromPrefixAndCreateParent(recordingName)
                 while (file.exists()) {
                     file = getFileFromPrefixAndCreateParent(

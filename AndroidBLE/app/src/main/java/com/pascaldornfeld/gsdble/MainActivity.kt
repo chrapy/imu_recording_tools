@@ -78,12 +78,15 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     //Preferences
     private lateinit var sharedPrefs : SharedPreferences
 
+    // Timer to display recording time
     private lateinit var timer: Timer
 
+    // Automatic Saving
     private val periodicSaveHandler: Handler = Handler()
     private lateinit var periodicSaveRunnable: Runnable
     private lateinit var extremityDataArray: ArrayList<ExtremityData>
     private var saveInterval: Long? = null
+    private var subFolder: String? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -307,6 +310,7 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                     automaticSaving()
                     periodicSaveHandler.postDelayed(periodicSaveRunnable, saveInterval!!)
                 }
+                subFolder = recLabel  + recorder!!.startTime.toString()
                 periodicSaveHandler.postDelayed(periodicSaveRunnable, saveInterval!!)
             }
         }
@@ -637,11 +641,11 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         markedTimeStamps = ArrayList<Long>()
         // if not deactivated write recorder object into file
         if(!sharedPrefs.getBoolean("dontSafeRawData", false)){
-            rec?.let { FileOperations.writeGestureFile(it) }
+            rec?.let { FileOperations.writeGestureFile(it, subFolder) }
         }
         if(sharedPrefs.getBoolean("enablePreprocessing", false)) {
 
-            val r: Runnable = PreprocessingRunnable(rec, sharedPrefs, this)
+            val r: Runnable = PreprocessingRunnable(rec, sharedPrefs, this, subFolder)
             Thread(r).start()
         }
         resetRecordedData()
@@ -674,11 +678,11 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     private fun endRecording() {
         // if not deactivated write recorder object into file
         if(!sharedPrefs.getBoolean("dontSafeRawData", false)){
-            recorder?.let { FileOperations.writeGestureFile(it) }
+            recorder?.let { FileOperations.writeGestureFile(it, subFolder) }
         }
         if(sharedPrefs.getBoolean("enablePreprocessing", false)) {
 
-            val r: Runnable = PreprocessingRunnable(recorder, sharedPrefs, this)
+            val r: Runnable = PreprocessingRunnable(recorder, sharedPrefs, this, subFolder)
             Thread(r).start()
         }
         recorder = null

@@ -8,6 +8,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Uni/Master/MasterThesis/imu_recording_tools/AndroidBLE/app/src/main/res/layout/activity_update_sensor_manager.xml" value="0.36614583333333334" />
+        <entry key="..\:/Uni/Master/MasterThesis/imu_recording_tools/AndroidBLE/app/src/main/res/layout/connect_fragment.xml" value="0.36614583333333334" />
+        <entry key="..\:/Uni/Master/MasterThesis/imu_recording_tools/AndroidBLE/app/src/main/res/layout/device_fragment.xml" value="0.36614583333333334" />
         <entry key="..\:/Uni/Master/MasterThesis/imu_recording_tools/AndroidBLE/app/src/main/res/layout/main_activity.xml" value="0.33" />
         <entry key="..\:/Uni/Master/MasterThesis/imu_recording_tools/AndroidBLE/app/src/main/res/xml/recording_preferences.xml" value="0.396875" />
       </map>

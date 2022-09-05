@@ -21,7 +21,8 @@ import kotlin.math.sqrt
 class PreprocessingRunnable(
     var recorder: GestureData?,
     var sharedPrefs: SharedPreferences,
-    var context: Context
+    var context: Context,
+    var subFolder: String? = null
 ) : Runnable {
 
 
@@ -323,7 +324,7 @@ class PreprocessingRunnable(
             preprocessedDataArray.toTypedArray()
         )
 
-        preprocessed.let { FileOperations.writePreprocessedFile(it) }
+        preprocessed.let { FileOperations.writePreprocessedFile(it, subFolder) }
     }
 
 

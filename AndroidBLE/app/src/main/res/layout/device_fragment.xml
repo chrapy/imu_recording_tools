@@ -50,9 +50,10 @@
             android:name="com.pascaldornfeld.gsdble.connected.view.subfragments.LongTimeGraphFragment"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAlignment="center"
+            android:textAlignment="textStart"
+            android:paddingStart="8dp"
             android:textColor="@color/ap_white"
-            app:layout_constraintEnd_toEndOf="@+id/vDeviceAddress"
+            app:layout_constraintEnd_toStartOf="@id/vCheckEnable"
             app:layout_constraintStart_toStartOf="@+id/vDeviceAddress"
             app:layout_constraintTop_toBottomOf="@+id/deviceAdressLabel"
             tools:text="200" />
