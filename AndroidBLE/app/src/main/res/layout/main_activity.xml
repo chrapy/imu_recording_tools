@@ -106,6 +106,16 @@
         app:layout_constraintEnd_toStartOf="@id/vRecordButton"
         app:layout_constraintBottom_toBottomOf="parent" />
 
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="@dimen/icon_size"
+        android:layout_height="@dimen/icon_size"
+        android:background="@drawable/save_icon"
+        android:layout_marginBottom="@dimen/margin_large"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/timestampButton"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
 
     <ProgressBar
         android:id="@+id/calculateDrift_progress"

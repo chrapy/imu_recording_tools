@@ -205,6 +205,10 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 }
             }
         }
+
+        saveButton.setOnClickListener {
+            automaticSaving()
+        }
         audio = AudioPlayer(this)
 
         timer = Timer(findViewById(R.id.timer))
@@ -539,6 +543,13 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             findViewById<TextView>(R.id.labelText).visibility = View.INVISIBLE
             findViewById<TextView>(R.id.label).visibility = View.INVISIBLE
         }
+
+        // automatic save mode set to manual save
+        if(!sharedPrefs.getBoolean("periodicSave", false)) {
+            saveButton.visibility = View.VISIBLE
+        } else {
+            saveButton.visibility = View.GONE
+        }
     }
 
     /**
@@ -634,23 +645,25 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
     }
 
     private fun automaticSaving() {
-        val t1 = System.currentTimeMillis()
-        recorder?.markedTimeStamps = markedTimeStamps
-        val rec = recorder?.deepCopy()
+        if(isRecording) {
+            val t1 = System.currentTimeMillis()
+            recorder?.markedTimeStamps = markedTimeStamps
+            val rec = recorder?.deepCopy()
 
-        markedTimeStamps = ArrayList<Long>()
-        // if not deactivated write recorder object into file
-        if(!sharedPrefs.getBoolean("dontSafeRawData", false)){
-            rec?.let { FileOperations.writeGestureFile(it, subFolder) }
-        }
-        if(sharedPrefs.getBoolean("enablePreprocessing", false)) {
+            markedTimeStamps = ArrayList<Long>()
+            // if not deactivated write recorder object into file
+            if (!sharedPrefs.getBoolean("dontSafeRawData", false)) {
+                rec?.let { FileOperations.writeGestureFile(it, subFolder) }
+            }
+            if (sharedPrefs.getBoolean("enablePreprocessing", false)) {
 
-            val r: Runnable = PreprocessingRunnable(rec, sharedPrefs, this, subFolder)
-            Thread(r).start()
+                val r: Runnable = PreprocessingRunnable(rec, sharedPrefs, this, subFolder)
+                Thread(r).start()
+            }
+            resetRecordedData()
+            val t2 = System.currentTimeMillis()
+            Log.d("SAVING", "Automatic Saving took " + (t2 - t1) + "ms")
         }
-        resetRecordedData()
-        val t2 = System.currentTimeMillis()
-        Log.d("SAVING", "Automatic Saving took " + (t2 - t1) + "ms")
     }
 
     private fun resetRecordedData() {
