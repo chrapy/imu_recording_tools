@@ -314,9 +314,12 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                     automaticSaving()
                     periodicSaveHandler.postDelayed(periodicSaveRunnable, saveInterval!!)
                 }
-                subFolder = recLabel  + recorder!!.startTime.toString()
                 periodicSaveHandler.postDelayed(periodicSaveRunnable, saveInterval!!)
             }
+        }
+        // save the recording in a subfolder
+        if (sharedPrefs.getBoolean("saveInSubfolder", false)) {
+            subFolder = recLabel  + recorder!!.startTime.toString()
         }
 
         timer.start()
@@ -644,6 +647,9 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
         builder.show()
     }
 
+    /**
+     * Save the current recorded data without stopping the recording.
+     */
     private fun automaticSaving() {
         if(isRecording) {
             val t1 = System.currentTimeMillis()
@@ -662,10 +668,18 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
             }
             resetRecordedData()
             val t2 = System.currentTimeMillis()
+            Toast.makeText(
+                baseContext,
+                "Recording Saved",
+                Toast.LENGTH_SHORT
+            ).show()
             Log.d("SAVING", "Automatic Saving took " + (t2 - t1) + "ms")
         }
     }
 
+    /**
+     * Resets the recorded data to their default values.
+     */
     private fun resetRecordedData() {
         recorder = null
 

@@ -93,15 +93,19 @@
             app:title="Save automatically"
             android:defaultValue="false"
             app:summaryOn="automatic"
-            app:summaryOff="manual"
-            />
+            app:summaryOff="manual"/>
+        <SwitchPreferenceCompat
+            app:key="saveInSubfolder"
+            app:title="Save in Subfolder"
+            android:defaultValue="false"
+            app:summaryOn="yes"
+            app:summaryOff="no"/>
         <EditTextPreference
             app:dependency="periodicSave"
             app:key="periodicSaveInterval"
             android:defaultValue="120"
             app:title="Periodic save interval (seconds)"
-            app:useSimpleSummaryProvider="true"
-            />
+            app:useSimpleSummaryProvider="true"/>
     </PreferenceCategory>
 
 </PreferenceScreen>
