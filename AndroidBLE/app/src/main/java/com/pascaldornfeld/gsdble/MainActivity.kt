@@ -518,8 +518,8 @@ class MainActivity : AppCompatActivity(), DeviceFragment.RemovableDeviceActivity
                 fragment.device(),
                 this,
                 DeviceViewModel.forDeviceFragment(fragment),
-                BluetoothGatt.CONNECTION_PRIORITY_BALANCED,
-                ImuConfig(3, false) // odr = 208Hz
+                BluetoothGatt.CONNECTION_PRIORITY_HIGH,
+                ImuConfig(2, false) // odr = 104Hz
             )
         )
     }
